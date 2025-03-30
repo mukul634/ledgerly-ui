@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileText, Download, Trash2, ChevronDown } from "lucide-react";
+import { Search, FileText, Download, Trash2, ChevronDown, PlusCircle, UserPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { 
   DropdownMenu, 
@@ -11,7 +11,9 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
+import { toast } from "sonner";
 import ClientDetail from "./ClientDetail";
+import AddClientForm from "./AddClientForm";
 
 // Mock data for clients
 const mockClients = [
@@ -127,8 +129,10 @@ const ClientsTable = () => {
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
+  const [clients, setClients] = useState(mockClients);
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false);
 
-  const filteredClients = mockClients.filter((client) => 
+  const filteredClients = clients.filter((client) => 
     client.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -144,10 +148,19 @@ const ClientsTable = () => {
   };
 
   const confirmDelete = () => {
-    // In a real application, handle the actual deletion here
-    console.log("Deleting client:", clientToDelete);
+    setClients(prevClients => prevClients.filter(client => client.id !== clientToDelete));
+    toast.success(`Client ${clientToDelete} has been deleted`);
     setIsDeleteDialogOpen(false);
     setClientToDelete(null);
+    
+    // If the deleted client is currently selected, clear the selection
+    if (selectedClient && selectedClient.id === clientToDelete) {
+      setSelectedClient(null);
+    }
+  };
+  
+  const handleAddClient = (newClient: any) => {
+    setClients(prevClients => [...prevClients, newClient]);
   };
 
   return (
@@ -163,6 +176,14 @@ const ClientsTable = () => {
           />
         </div>
         <div className="flex gap-2">
+          <Button 
+            onClick={() => setIsAddClientOpen(true)}
+            className="bg-finblue-700 hover:bg-finblue-800"
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Client
+          </Button>
+          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -194,49 +215,58 @@ const ClientsTable = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredClients.map((client) => (
-              <TableRow 
-                key={client.id} 
-                onClick={() => handleRowClick(client)}
-                className="cursor-pointer hover:bg-muted/50 transition-colors"
-              >
-                <TableCell>{client.id}</TableCell>
-                <TableCell>{client.companyName}</TableCell>
-                <TableCell>{client.district}</TableCell>
-                <TableCell>{client.phoneNo}</TableCell>
-                <TableCell>{client.renewalDate}</TableCell>
-                <TableCell>
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    client.clientStatus === 'Active' 
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                  }`}>
-                    {client.clientStatus}
-                  </span>
-                </TableCell>
-                <TableCell>${client.dueAmount.toFixed(2)}</TableCell>
-                <TableCell className="space-x-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      // Handle download
-                    }}
-                  >
-                    <Download className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={(e) => handleDelete(client.id, e)}
-                    className="text-destructive hover:text-destructive/90"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+            {filteredClients.length > 0 ? (
+              filteredClients.map((client) => (
+                <TableRow 
+                  key={client.id} 
+                  onClick={() => handleRowClick(client)}
+                  className="cursor-pointer hover:bg-muted/50 transition-colors"
+                >
+                  <TableCell>{client.id}</TableCell>
+                  <TableCell>{client.companyName}</TableCell>
+                  <TableCell>{client.district}</TableCell>
+                  <TableCell>{client.phoneNo}</TableCell>
+                  <TableCell>{client.renewalDate}</TableCell>
+                  <TableCell>
+                    <span className={`px-2 py-1 rounded-full text-xs ${
+                      client.clientStatus === 'Active' 
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                    }`}>
+                      {client.clientStatus}
+                    </span>
+                  </TableCell>
+                  <TableCell>${client.dueAmount.toFixed(2)}</TableCell>
+                  <TableCell className="space-x-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Handle download
+                        toast.info("Downloading client statement...");
+                      }}
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={(e) => handleDelete(client.id, e)}
+                      className="text-destructive hover:text-destructive/90"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={8} className="h-24 text-center">
+                  No clients found. Try adjusting your search or add a new client.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>
@@ -270,6 +300,13 @@ const ClientsTable = () => {
           </div>
         </DialogContent>
       </Dialog>
+      
+      {/* Add Client Form */}
+      <AddClientForm 
+        open={isAddClientOpen} 
+        onOpenChange={setIsAddClientOpen} 
+        onAddClient={handleAddClient} 
+      />
     </div>
   );
 };
