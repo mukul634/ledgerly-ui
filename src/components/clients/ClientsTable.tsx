@@ -14,6 +14,7 @@ import {
 import { toast } from "sonner";
 import ClientDetail from "./ClientDetail";
 import AddClientForm from "./AddClientForm";
+import { convertToBikramSambat } from "@/utils/dateConverter";
 
 // Mock data for clients
 const mockClients = [
@@ -161,6 +162,8 @@ const ClientsTable = () => {
   
   const handleAddClient = (newClient: any) => {
     setClients(prevClients => [...prevClients, newClient]);
+    toast.success("Client added successfully");
+    setIsAddClientOpen(false);
   };
 
   return (
@@ -209,6 +212,7 @@ const ClientsTable = () => {
               <TableHead>District</TableHead>
               <TableHead>Phone No</TableHead>
               <TableHead>Renewal Date</TableHead>
+              <TableHead>Renewal Date (BS)</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Due Amount</TableHead>
               <TableHead>Actions</TableHead>
@@ -227,6 +231,7 @@ const ClientsTable = () => {
                   <TableCell>{client.district}</TableCell>
                   <TableCell>{client.phoneNo}</TableCell>
                   <TableCell>{client.renewalDate}</TableCell>
+                  <TableCell>{convertToBikramSambat(client.renewalDate)}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       client.clientStatus === 'Active' 
@@ -262,7 +267,7 @@ const ClientsTable = () => {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={9} className="h-24 text-center">
                   No clients found. Try adjusting your search or add a new client.
                 </TableCell>
               </TableRow>

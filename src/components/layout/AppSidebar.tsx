@@ -1,5 +1,5 @@
 
-import { Home, DollarSign, Calendar, RefreshCw, Network, Sun, Moon, Menu } from "lucide-react";
+import { Home, DollarSign, Calendar, RefreshCw, Network, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { 
   Sidebar, 
@@ -12,7 +12,6 @@ import {
   SidebarGroup, 
   SidebarGroupContent, 
   SidebarGroupLabel,
-  SidebarTrigger,
   useSidebar
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -29,23 +28,15 @@ const navItems = [
 const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
   const location = useLocation();
-  const { state, toggleSidebar } = useSidebar();
+  const { state } = useSidebar();
 
   return (
     <Sidebar variant="sidebar">
-      <SidebarHeader className="flex items-center justify-between">
-        <div className="flex items-center gap-2 px-2">
+      <SidebarHeader className="flex items-center px-4 py-3">
+        <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-finblue-800 text-white font-bold">FL</div>
           <span className="text-lg font-bold text-finblue-800 dark:text-white">FinLedger</span>
         </div>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="text-muted-foreground hover:text-foreground"
-          onClick={toggleSidebar}
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
       </SidebarHeader>
       
       <SidebarContent>
