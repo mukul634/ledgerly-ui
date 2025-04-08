@@ -1,5 +1,5 @@
 
-import { Home, DollarSign, Calendar, RefreshCw, Network, Sun, Moon } from "lucide-react";
+import { Home, FileText, Calendar, RefreshCw, Network, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { 
   Sidebar, 
@@ -19,7 +19,7 @@ import { useLocation } from "react-router-dom";
 
 const navItems = [
   { path: "/", label: "Clients", icon: Home },
-  { path: "/transactions", label: "Transactions", icon: DollarSign },
+  { path: "/transactions", label: "Transactions", icon: FileText },
   { path: "/daybook", label: "Daybook", icon: Calendar },
   { path: "/renewal", label: "Renewal", icon: RefreshCw },
   { path: "/connections", label: "Connections", icon: Network },
