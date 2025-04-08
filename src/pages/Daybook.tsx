@@ -116,7 +116,7 @@ const Daybook = () => {
               <CardTitle className="text-sm font-medium">Total Income</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalIncome.toFixed(2)}</div>
+              <div className="text-2xl font-bold">₹{totalIncome.toFixed(2)}</div>
             </CardContent>
           </Card>
           
@@ -125,7 +125,7 @@ const Daybook = () => {
               <CardTitle className="text-sm font-medium">Total Expenses</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${totalExpense.toFixed(2)}</div>
+              <div className="text-2xl font-bold">₹{totalExpense.toFixed(2)}</div>
             </CardContent>
           </Card>
           
@@ -134,7 +134,7 @@ const Daybook = () => {
               <CardTitle className="text-sm font-medium">Net Balance</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">${(totalIncome - totalExpense).toFixed(2)}</div>
+              <div className="text-2xl font-bold">₹{(totalIncome - totalExpense).toFixed(2)}</div>
             </CardContent>
           </Card>
         </div>
@@ -165,7 +165,7 @@ const Daybook = () => {
                     <TableCell>{entry.companyName}</TableCell>
                     <TableCell>{entry.softwareName}</TableCell>
                     <TableCell>{entry.paymentMode}</TableCell>
-                    <TableCell className="text-right">${entry.amount.toFixed(2)}</TableCell>
+                    <TableCell className="text-right">₹{entry.amount.toFixed(2)}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${
                         entry.type === 'income' 

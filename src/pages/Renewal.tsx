@@ -106,7 +106,7 @@ const Renewal = () => {
                         </div>
                         <div>
                           <p className="text-muted-foreground">Amount</p>
-                          <p>${renewal.renewalAmount.toFixed(2)}</p>
+                          <p>₹{renewal.renewalAmount.toFixed(2)}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Days Left</p>
@@ -159,7 +159,7 @@ const Renewal = () => {
                         </div>
                         <div>
                           <p className="text-muted-foreground">Amount</p>
-                          <p>${renewal.renewalAmount.toFixed(2)}</p>
+                          <p>₹{renewal.renewalAmount.toFixed(2)}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Days Left</p>

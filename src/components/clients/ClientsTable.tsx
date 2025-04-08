@@ -241,7 +241,7 @@ const ClientsTable = () => {
                       {client.clientStatus}
                     </span>
                   </TableCell>
-                  <TableCell>${client.dueAmount.toFixed(2)}</TableCell>
+                  <TableCell>₹{client.dueAmount.toFixed(2)}</TableCell>
                   <TableCell className="space-x-2">
                     <Button 
                       variant="ghost" 

@@ -57,7 +57,7 @@ const ClientDetail = ({ client }: ClientDetailProps) => {
             <div className="space-y-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Due Amount</p>
-                <p className="text-xl font-bold">${client.dueAmount.toFixed(2)}</p>
+                <p className="text-xl font-bold">₹{client.dueAmount.toFixed(2)}</p>
               </div>
               
               <div className="space-y-1">
@@ -67,7 +67,7 @@ const ClientDetail = ({ client }: ClientDetailProps) => {
               
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">SMS Rate</p>
-                <p className="font-medium">${client.smsRate.toFixed(2)}</p>
+                <p className="font-medium">₹{client.smsRate.toFixed(2)}</p>
               </div>
 
               {client.dueAmount > 0 && (
