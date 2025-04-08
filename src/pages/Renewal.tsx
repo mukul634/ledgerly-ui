@@ -1,4 +1,3 @@
-
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -106,7 +105,7 @@ const Renewal = () => {
                         </div>
                         <div>
                           <p className="text-muted-foreground">Amount</p>
-                          <p>₹{renewal.renewalAmount.toFixed(2)}</p>
+                          <p>Rs.{renewal.renewalAmount.toFixed(2)}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Days Left</p>
@@ -159,7 +158,7 @@ const Renewal = () => {
                         </div>
                         <div>
                           <p className="text-muted-foreground">Amount</p>
-                          <p>₹{renewal.renewalAmount.toFixed(2)}</p>
+                          <p>Rs.{renewal.renewalAmount.toFixed(2)}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Days Left</p>
@@ -200,7 +199,7 @@ const Renewal = () => {
                     <TableCell>{renewal.clientName}</TableCell>
                     <TableCell>{renewal.clientId}</TableCell>
                     <TableCell>{renewal.renewalDate}</TableCell>
-                    <TableCell>${renewal.renewalAmount.toFixed(2)}</TableCell>
+                    <TableCell>Rs.{renewal.renewalAmount.toFixed(2)}</TableCell>
                     <TableCell>{renewal.agentName}</TableCell>
                     <TableCell>
                       <span className={`px-2 py-1 rounded-full text-xs ${

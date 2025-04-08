@@ -1,10 +1,44 @@
 
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, MapPin, Mail, Phone, Building } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+// Software products
+const softwareProducts = [
+  {
+    id: "SW001",
+    name: "Financial Suite",
+    description: "Complete financial management software for businesses",
+    icon: "💼"
+  },
+  {
+    id: "SW002",
+    name: "Ledger Pro",
+    description: "Advanced ledger management with reporting",
+    icon: "📊"
+  },
+  {
+    id: "SW003",
+    name: "Tax Manager",
+    description: "Tax calculation and filing made simple",
+    icon: "📝"
+  },
+  {
+    id: "SW004",
+    name: "Invoice System",
+    description: "Generate and manage invoices with ease",
+    icon: "🧾"
+  }
+];
+
+// Cities where software is used
+const cities = [
+  "Kathmandu", "Pokhara", "Lalitpur", "Bhaktapur", "Biratnagar", "Birgunj", "Dharan", "Butwal"
+];
 
 // Mock connections data
 const mockConnections = [
@@ -14,9 +48,10 @@ const mockConnections = [
     contactPerson: "John Doe",
     email: "john.doe@techsolutions.com",
     phoneNumber: "123-456-7890",
-    location: "New York, NY",
+    location: "Kathmandu, Nepal",
     status: "Active",
-    softwareUsage: "Financial Suite, Tax Manager"
+    softwareUsage: "Financial Suite, Tax Manager",
+    software: ["SW001", "SW003"]
   },
   {
     id: "CN002",
@@ -24,9 +59,10 @@ const mockConnections = [
     contactPerson: "Emma Wilson",
     email: "emma.wilson@globalent.com",
     phoneNumber: "111-222-3333",
-    location: "Los Angeles, CA",
+    location: "Pokhara, Nepal",
     status: "Active",
-    softwareUsage: "Ledger Pro"
+    softwareUsage: "Ledger Pro",
+    software: ["SW002"]
   },
   {
     id: "CN003",
@@ -34,9 +70,10 @@ const mockConnections = [
     contactPerson: "Robert Green",
     email: "robert.green@innosys.com",
     phoneNumber: "777-888-9999",
-    location: "Chicago, IL",
+    location: "Lalitpur, Nepal",
     status: "Inactive",
-    softwareUsage: "Financial Suite, Invoice Manager"
+    softwareUsage: "Financial Suite, Invoice System",
+    software: ["SW001", "SW004"]
   },
   {
     id: "CN004",
@@ -44,9 +81,10 @@ const mockConnections = [
     contactPerson: "Alice Cooper",
     email: "alice.cooper@premier.com",
     phoneNumber: "444-333-2222",
-    location: "Houston, TX",
+    location: "Kathmandu, Nepal",
     status: "Active",
-    softwareUsage: "Complete Suite"
+    softwareUsage: "Complete Suite",
+    software: ["SW001", "SW002", "SW003", "SW004"]
   },
   {
     id: "CN005",
@@ -54,9 +92,10 @@ const mockConnections = [
     contactPerson: "Daniel Smith",
     email: "daniel.smith@futuretech.com",
     phoneNumber: "999-888-7777",
-    location: "Boston, MA",
+    location: "Biratnagar, Nepal",
     status: "Active",
-    softwareUsage: "Tax Manager, Invoice System"
+    softwareUsage: "Tax Manager, Invoice System",
+    software: ["SW003", "SW004"]
   },
   {
     id: "CN006",
@@ -64,24 +103,39 @@ const mockConnections = [
     contactPerson: "Jennifer Brown",
     email: "jennifer.brown@smartconsulting.com",
     phoneNumber: "555-666-7777",
-    location: "Seattle, WA",
+    location: "Pokhara, Nepal",
     status: "Inactive",
-    softwareUsage: "Financial Reporting Tool"
+    softwareUsage: "Financial Reporting Tool",
+    software: ["SW001"]
   }
 ];
 
 const Connections = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [locationFilter, setLocationFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [selectedSoftware, setSelectedSoftware] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState<string | null>(null);
 
-  const filteredConnections = mockConnections
-    .filter((connection) => 
-      (connection.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      connection.contactPerson.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (locationFilter === "" || connection.location.includes(locationFilter)) &&
-      (statusFilter === "" || connection.status === statusFilter)
-    );
+  // Filter connections based on software, city, and search term
+  const filteredConnections = mockConnections.filter((connection) => {
+    // Filter by software if selected
+    if (selectedSoftware && !connection.software.includes(selectedSoftware)) {
+      return false;
+    }
+    
+    // Filter by city if selected
+    if (selectedCity && !connection.location.includes(selectedCity)) {
+      return false;
+    }
+    
+    // Filter by search term
+    if (searchTerm && 
+        !connection.companyName.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !connection.contactPerson.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+    
+    return true;
+  });
 
   return (
     <MainLayout>
@@ -90,6 +144,55 @@ const Connections = () => {
           <h1 className="text-3xl font-bold">Connections</h1>
           <p className="text-muted-foreground">Manage your client connections and contact information</p>
         </div>
+        
+        <Tabs defaultValue="software" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="software">View by Software</TabsTrigger>
+            <TabsTrigger value="city">View by City</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="software" className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {softwareProducts.map(software => (
+                <Card 
+                  key={software.id}
+                  className={`cursor-pointer transition-all ${selectedSoftware === software.id ? 'border-primary ring-1 ring-primary' : ''}`}
+                  onClick={() => setSelectedSoftware(selectedSoftware === software.id ? null : software.id)}
+                >
+                  <CardContent className="pt-6">
+                    <div className="flex flex-col items-center text-center space-y-3">
+                      <div className="text-4xl">{software.icon}</div>
+                      <h3 className="font-semibold text-lg">{software.name}</h3>
+                      <p className="text-sm text-muted-foreground">{software.description}</p>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="justify-between border-t p-4">
+                    <p className="text-sm text-muted-foreground">
+                      {mockConnections.filter(conn => conn.software.includes(software.id)).length} users
+                    </p>
+                    <Button variant="ghost" size="sm">View All</Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="city" className="space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {cities.map(city => (
+                <Button
+                  key={city}
+                  variant={selectedCity === city ? "default" : "outline"}
+                  className="justify-start"
+                  onClick={() => setSelectedCity(selectedCity === city ? null : city)}
+                >
+                  <MapPin className="h-4 w-4 mr-2" />
+                  {city}
+                </Button>
+              ))}
+            </div>
+          </TabsContent>
+        </Tabs>
         
         <div className="flex flex-col md:flex-row gap-4">
           <div className="relative flex-1">
@@ -102,31 +205,14 @@ const Connections = () => {
             />
           </div>
           
-          <div className="flex gap-2">
-            <select 
-              className="px-3 py-2 rounded-md border border-input bg-background"
-              value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
-            >
-              <option value="">All Locations</option>
-              <option value="New York">New York</option>
-              <option value="Los Angeles">Los Angeles</option>
-              <option value="Chicago">Chicago</option>
-              <option value="Houston">Houston</option>
-              <option value="Boston">Boston</option>
-              <option value="Seattle">Seattle</option>
-            </select>
-            
-            <select 
-              className="px-3 py-2 rounded-md border border-input bg-background"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option value="">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
+          {(selectedSoftware || selectedCity) && (
+            <Button variant="outline" onClick={() => {
+              setSelectedSoftware(null);
+              setSelectedCity(null);
+            }}>
+              Clear Filters
+            </Button>
+          )}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

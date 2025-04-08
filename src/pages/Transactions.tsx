@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // Mock transactions data
 const mockTransactions = [
@@ -73,11 +75,28 @@ const mockTransactions = [
 const Transactions = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
+  
+  // Generate a new transaction ID
+  const generateTransactionId = () => {
+    const lastTransaction = mockTransactions[mockTransactions.length - 1];
+    const lastId = lastTransaction ? parseInt(lastTransaction.id.substring(2)) : 0;
+    return `TR${String(lastId + 1).padStart(3, '0')}`;
+  };
+  
+  // Auto-generated values
+  const newTransactionId = generateTransactionId();
+  const newRecordNo = `REC${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
   const filteredTransactions = mockTransactions.filter((transaction) => 
     transaction.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.clientId.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    toast.success("Transaction created successfully");
+    // Additional logic for creating transaction would go here
+  };
 
   return (
     <MainLayout>
@@ -89,13 +108,31 @@ const Transactions = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Create Transaction</CardTitle>
+            <CardTitle>Create New Transaction</CardTitle>
           </CardHeader>
           <CardContent>
-            <form className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="mb-4 space-y-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Transaction ID</Label>
+                  <p className="font-medium">{newTransactionId}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Record No</Label>
+                  <p className="font-medium">{newRecordNo}</p>
+                </div>
+              </div>
+            </div>
+            
+            <form className="grid grid-cols-1 md:grid-cols-3 gap-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
-                <Label htmlFor="clientId">Client ID</Label>
-                <Input id="clientId" placeholder="Select client..." />
+                <Label htmlFor="clientSelect">Select Client</Label>
+                <select id="clientSelect" className="w-full p-2 border rounded-md bg-background">
+                  <option value="">Select a client...</option>
+                  <option value="CL001">CL001 - Tech Solutions Inc.</option>
+                  <option value="CL002">CL002 - Global Enterprises</option>
+                  <option value="CL003">CL003 - Innovative Systems</option>
+                </select>
               </div>
               
               <div className="space-y-2">
@@ -141,8 +178,14 @@ const Transactions = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="recordNo">Record No</Label>
-                <Input id="recordNo" placeholder="Enter record number..." />
+                <Label htmlFor="paymentMethod">Payment Method</Label>
+                <select id="paymentMethod" className="w-full p-2 border rounded-md bg-background">
+                  <option value="">Select payment method...</option>
+                  <option value="cash">Cash</option>
+                  <option value="bank">Bank Transfer</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="online">Online Payment</option>
+                </select>
               </div>
               
               <div className="md:col-span-3 flex justify-end">
