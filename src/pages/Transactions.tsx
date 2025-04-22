@@ -17,7 +17,7 @@ import { toast } from "sonner";
 const mockTransactions = [
   {
     id: "TR001",
-    productName: "Financial Suite",
+    productName: "Co-operative Software",
     clientId: "CL001",
     clientName: "Tech Solutions Inc.",
     address: "123 Main St, City",
@@ -28,7 +28,7 @@ const mockTransactions = [
   },
   {
     id: "TR002",
-    productName: "Ledger Pro",
+    productName: "Tradesoft",
     clientId: "CL002",
     clientName: "Global Enterprises",
     address: "456 Oak St, Town",
@@ -39,7 +39,7 @@ const mockTransactions = [
   },
   {
     id: "TR003",
-    productName: "Invoice Manager",
+    productName: "Schoolpro",
     clientId: "CL003",
     clientName: "Innovative Systems",
     address: "789 Pine St, Village",
@@ -50,7 +50,7 @@ const mockTransactions = [
   },
   {
     id: "TR004",
-    productName: "Complete Suite",
+    productName: "Nepalgenetics",
     clientId: "CL004",
     clientName: "Premier Solutions",
     address: "101 Maple St, County",
@@ -61,7 +61,7 @@ const mockTransactions = [
   },
   {
     id: "TR005",
-    productName: "Tax Manager",
+    productName: "Co-operative Software",
     clientId: "CL005",
     clientName: "Future Tech Inc.",
     address: "202 Cedar St, Metro",

@@ -49,8 +49,8 @@ const mockConnections = [
     phoneNumber: "123-456-7890",
     location: "Kathmandu, Nepal",
     status: "Active",
-    softwareUsage: "Financial Suite, Tax Manager",
-    software: ["SW001", "SW003"]
+    softwareUsage: "Co-operative Software, Tradesoft",
+    software: ["SW001", "SW002"]
   },
   {
     id: "CN002",
@@ -60,8 +60,8 @@ const mockConnections = [
     phoneNumber: "111-222-3333",
     location: "Pokhara, Nepal",
     status: "Active",
-    softwareUsage: "Ledger Pro",
-    software: ["SW002"]
+    softwareUsage: "Schoolpro",
+    software: ["SW003"]
   },
   {
     id: "CN003",
@@ -71,7 +71,7 @@ const mockConnections = [
     phoneNumber: "777-888-9999",
     location: "Lalitpur, Nepal",
     status: "Inactive",
-    softwareUsage: "Financial Suite, Invoice System",
+    softwareUsage: "Co-operative Software, Nepalgenetics",
     software: ["SW001", "SW004"]
   },
   {
@@ -82,7 +82,7 @@ const mockConnections = [
     phoneNumber: "444-333-2222",
     location: "Kathmandu, Nepal",
     status: "Active",
-    softwareUsage: "Complete Suite",
+    softwareUsage: "Co-operative Software, Tradesoft, Schoolpro, Nepalgenetics",
     software: ["SW001", "SW002", "SW003", "SW004"]
   },
   {
@@ -93,7 +93,7 @@ const mockConnections = [
     phoneNumber: "999-888-7777",
     location: "Biratnagar, Nepal",
     status: "Active",
-    softwareUsage: "Tax Manager, Invoice System",
+    softwareUsage: "Schoolpro, Nepalgenetics",
     software: ["SW003", "SW004"]
   },
   {
@@ -104,7 +104,7 @@ const mockConnections = [
     phoneNumber: "555-666-7777",
     location: "Pokhara, Nepal",
     status: "Inactive",
-    softwareUsage: "Financial Reporting Tool",
+    softwareUsage: "Co-operative Software",
     software: ["SW001"]
   }
 ];
