@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,27 +10,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 const softwareProducts = [
   {
     id: "SW001",
-    name: "Financial Suite",
-    description: "Complete financial management software for businesses",
+    name: "Co-operative Software",
+    description: "Complete financial management software for cooperatives",
     icon: "💼"
   },
   {
     id: "SW002",
-    name: "Ledger Pro",
-    description: "Advanced ledger management with reporting",
+    name: "Tradesoft",
+    description: "Advanced trading and inventory management system",
     icon: "📊"
   },
   {
     id: "SW003",
-    name: "Tax Manager",
-    description: "Tax calculation and filing made simple",
-    icon: "📝"
+    name: "Schoolpro",
+    description: "Comprehensive school management system",
+    icon: "🏫"
   },
   {
     id: "SW004",
-    name: "Invoice System",
-    description: "Generate and manage invoices with ease",
-    icon: "🧾"
+    name: "Nepalgenetics",
+    description: "Genetic research and data management software",
+    icon: "🧬"
   }
 ];
 
