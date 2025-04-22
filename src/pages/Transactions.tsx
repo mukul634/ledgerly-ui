@@ -189,7 +189,7 @@ const Transactions = () => {
               </div>
               
               <div className="md:col-span-3 flex justify-end">
-                <Button type="submit">Create Transaction</Button>
+                <Button type="submit">Create New Transaction</Button>
               </div>
             </form>
           </CardContent>
