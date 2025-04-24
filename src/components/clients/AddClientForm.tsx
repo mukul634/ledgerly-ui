@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,12 +19,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-
-interface AddClientFormProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onAddClient: (client: any) => void;
-}
+import { useNumberInput } from "@/hooks/useNumberInput";
+import { convertToBikramSambat } from "@/utils/dateConverter";
 
 const AVAILABLE_PRODUCTS = [
   "Co-operative Software",
@@ -34,7 +29,14 @@ const AVAILABLE_PRODUCTS = [
   "Nepalgenetics"
 ];
 
+interface AddClientFormProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onAddClient: (client: any) => void;
+}
+
 const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) => {
+  const { handleNumberInput } = useNumberInput();
   const [formData, setFormData] = useState({
     companyName: "",
     district: "",
@@ -56,9 +58,18 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    if ((name === 'phoneNo' || name === 'mobileNo' || name === 'panNo') && 
+        e.target instanceof HTMLInputElement && 
+        !handleNumberInput(e as React.ChangeEvent<HTMLInputElement>)) {
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
-      [name]: name === "dueAmount" ? parseFloat(value) || 0 : value
+      [name]: name === "dueAmount" ? 
+        Math.floor(parseFloat(value || "0") / 100) * 100 : // Round to nearest 100
+        value
     }));
   };
 
@@ -67,6 +78,10 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
       ...prev,
       productsUsed: value
     }));
+  };
+
+  const formatDateDisplay = (date: string) => {
+    return date ? convertToBikramSambat(date) : '';
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -148,7 +163,9 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                 id="phoneNo" 
                 name="phoneNo" 
                 value={formData.phoneNo} 
-                onChange={handleChange} 
+                onChange={handleChange}
+                pattern="\d*"
+                inputMode="numeric"
                 required
               />
             </div>
@@ -159,7 +176,9 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                 id="mobileNo" 
                 name="mobileNo" 
                 value={formData.mobileNo} 
-                onChange={handleChange} 
+                onChange={handleChange}
+                pattern="\d*"
+                inputMode="numeric"
               />
             </div>
             
@@ -174,12 +193,14 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="panNo">PAN No</Label>
+              <Label htmlFor="panNo">PAN Number</Label>
               <Input 
                 id="panNo" 
                 name="panNo" 
                 value={formData.panNo} 
-                onChange={handleChange} 
+                onChange={handleChange}
+                pattern="\d*"
+                inputMode="numeric"
               />
             </div>
             
@@ -192,6 +213,11 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                 value={formData.installDate} 
                 onChange={handleChange} 
               />
+              {formData.installDate && (
+                <p className="text-sm text-muted-foreground">
+                  {formatDateDisplay(formData.installDate)}
+                </p>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -203,6 +229,11 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                 value={formData.renewalDate} 
                 onChange={handleChange} 
               />
+              {formData.renewalDate && (
+                <p className="text-sm text-muted-foreground">
+                  {formatDateDisplay(formData.renewalDate)}
+                </p>
+              )}
             </div>
             
             <div className="space-y-2">
@@ -222,7 +253,8 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                 id="dueAmount" 
                 name="dueAmount" 
                 type="number" 
-                step="0.01" 
+                step="100"
+                min="0"
                 value={formData.dueAmount} 
                 onChange={handleChange} 
               />
@@ -295,4 +327,3 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
 };
 
 export default AddClientForm;
-
