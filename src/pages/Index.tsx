@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import ClientsTable from "@/components/clients/ClientsTable";
@@ -33,9 +34,59 @@ const Index = () => {
       startDate: "2022-10-01",
       closeDate: ""
     },
-    { id: "CL003", name: "Innovative Systems", amount: 750.00, dueDate: "2023-09-10" },
-    { id: "CL005", name: "Future Tech Inc.", amount: 1000.00, dueDate: "2023-08-30" },
+    { 
+      id: "CL003", 
+      companyName: "Innovative Systems", 
+      district: "South",
+      phoneNo: "555-123-4567",
+      fullName: "Robert Smith",
+      address: "456 Tech Ave, Town",
+      mobileNo: "777-888-9999",
+      renewalDate: "2023-09-10",
+      installDate: "2022-09-10",
+      agentName: "Linda Martinez",
+      panNo: "XYSPZ9876T",
+      dueAmount: 750.00,
+      remarks: "Regular client",
+      productsUsed: "Accounting Software",
+      clientStatus: "Active",
+      startDate: "2022-09-01",
+      closeDate: "" 
+    },
+    { 
+      id: "CL005", 
+      companyName: "Future Tech Inc.", 
+      district: "North",
+      phoneNo: "222-333-4444",
+      fullName: "Emma Johnson",
+      address: "789 Innovation Rd, Village",
+      mobileNo: "111-222-3333",
+      renewalDate: "2023-08-30",
+      installDate: "2022-08-30",
+      agentName: "Mark Wilson",
+      panNo: "LMNOP5432Q",
+      dueAmount: 1000.00,
+      remarks: "New client",
+      productsUsed: "Inventory Management",
+      clientStatus: "Pending",
+      startDate: "2022-08-15",
+      closeDate: "" 
+    },
   ]);
+
+  // Define the overdueClients array
+  const overdueClients = [
+    { id: "CL001", name: "Tech Solutions Inc.", amount: 1250.00, dueDate: "2023-08-15" },
+    { id: "CL003", name: "Innovative Systems", amount: 750.00, dueDate: "2023-09-10" },
+    { id: "CL005", name: "Future Tech Inc.", amount: 1000.00, dueDate: "2023-08-30" }
+  ];
+
+  // Define the pendingRenewals array
+  const pendingRenewals = [
+    { id: "CL001", name: "Tech Solutions Inc.", renewalDate: "2023-10-15", amount: 1500.00 },
+    { id: "CL003", name: "Innovative Systems", renewalDate: "2023-09-10", amount: 800.00 },
+    { id: "CL005", name: "Future Tech Inc.", renewalDate: "2023-08-30", amount: 1000.00 }
+  ];
 
   const handleAddClient = (newClient: any) => {
     setClients(prev => [...prev, newClient]);
