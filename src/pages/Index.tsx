@@ -1,18 +1,19 @@
-
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import ClientsTable from "@/components/clients/ClientsTable";
+import AddClientForm from "@/components/clients/AddClientForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, AlertCircle } from "lucide-react";
+import { Users, FileText, AlertCircle, UserPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
 
 const Index = () => {
   const [showingClientDetails, setShowingClientDetails] = useState(false);
   const [showingOverdueDetails, setShowingOverdueDetails] = useState(false);
   const [showingRenewalDetails, setShowingRenewalDetails] = useState(false);
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false);
 
-  // Mock data for details
   const overdueClients = [
     { id: "CL001", name: "Tech Solutions Inc.", amount: 1250.00, dueDate: "2023-09-15" },
     { id: "CL003", name: "Innovative Systems", amount: 750.00, dueDate: "2023-09-10" },
@@ -28,9 +29,18 @@ const Index = () => {
   return (
     <MainLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Clients</h1>
-          <p className="text-muted-foreground">Manage your client information and financial details</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold">Clients</h1>
+            <p className="text-muted-foreground">Manage your client information and financial details</p>
+          </div>
+          <Button 
+            onClick={() => setIsAddClientOpen(true)}
+            className="bg-finblue-700 hover:bg-finblue-800"
+          >
+            <UserPlus className="mr-2 h-4 w-4" />
+            Add Client
+          </Button>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -80,7 +90,12 @@ const Index = () => {
         <ClientsTable />
       </div>
 
-      {/* Clients Detail Dialog */}
+      <AddClientForm 
+        open={isAddClientOpen} 
+        onOpenChange={setIsAddClientOpen} 
+        onAddClient={() => setIsAddClientOpen(false)} 
+      />
+
       <Dialog open={showingClientDetails} onOpenChange={setShowingClientDetails}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -109,7 +124,6 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Overdue Amount Detail Dialog */}
       <Dialog open={showingOverdueDetails} onOpenChange={setShowingOverdueDetails}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
@@ -144,7 +158,6 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Pending Renewals Detail Dialog */}
       <Dialog open={showingRenewalDetails} onOpenChange={setShowingRenewalDetails}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
