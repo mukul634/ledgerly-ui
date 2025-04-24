@@ -12,6 +12,13 @@ import {
   DialogFooter,
   DialogClose
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "sonner";
 
 interface AddClientFormProps {
@@ -19,6 +26,13 @@ interface AddClientFormProps {
   onOpenChange: (open: boolean) => void;
   onAddClient: (client: any) => void;
 }
+
+const AVAILABLE_PRODUCTS = [
+  "Co-operative Software",
+  "Tradesoft",
+  "Schoolpro",
+  "Nepalgenetics"
+];
 
 const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) => {
   const [formData, setFormData] = useState({
@@ -33,39 +47,40 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
     agentName: "",
     panNo: "",
     dueAmount: 0,
-    representative: "",
     remarks: "",
     productsUsed: "",
     clientStatus: "Active",
     startDate: "",
-    closeDate: "",
-    smsRate: 0.5
+    closeDate: ""
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === "dueAmount" || name === "smsRate" 
-        ? parseFloat(value) || 0 
-        : value
+      [name]: name === "dueAmount" ? parseFloat(value) || 0 : value
+    }));
+  };
+
+  const handleProductChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      productsUsed: value
     }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Generate a unique client ID (in a real app, this would be done server-side)
     const newClient = {
       ...formData,
-      id: `CL${Math.floor(100 + Math.random() * 900)}`, // Simple ID generation for demo purposes
+      id: `CL${Math.floor(100 + Math.random() * 900)}`,
     };
     
     onAddClient(newClient);
     toast.success("Client added successfully!");
-    onOpenChange(false); // Close dialog after successful submission
+    onOpenChange(false);
     
-    // Reset form
     setFormData({
       companyName: "",
       district: "",
@@ -78,13 +93,11 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
       agentName: "",
       panNo: "",
       dueAmount: 0,
-      representative: "",
       remarks: "",
       productsUsed: "",
       clientStatus: "Active",
       startDate: "",
-      closeDate: "",
-      smsRate: 0.5
+      closeDate: ""
     });
   };
 
@@ -171,16 +184,6 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="representative">Representative</Label>
-              <Input 
-                id="representative" 
-                name="representative" 
-                value={formData.representative} 
-                onChange={handleChange} 
-              />
-            </div>
-            
-            <div className="space-y-2">
               <Label htmlFor="installDate">Install Date</Label>
               <Input 
                 id="installDate" 
@@ -226,18 +229,6 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="smsRate">SMS Rate</Label>
-              <Input 
-                id="smsRate" 
-                name="smsRate" 
-                type="number" 
-                step="0.01" 
-                value={formData.smsRate} 
-                onChange={handleChange} 
-              />
-            </div>
-            
-            <div className="space-y-2">
               <Label htmlFor="clientStatus">Client Status</Label>
               <select 
                 id="clientStatus" 
@@ -254,12 +245,18 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             
             <div className="space-y-2">
               <Label htmlFor="productsUsed">Products Used</Label>
-              <Input 
-                id="productsUsed" 
-                name="productsUsed" 
-                value={formData.productsUsed} 
-                onChange={handleChange} 
-              />
+              <Select onValueChange={handleProductChange} value={formData.productsUsed}>
+                <SelectTrigger id="productsUsed">
+                  <SelectValue placeholder="Select a product" />
+                </SelectTrigger>
+                <SelectContent>
+                  {AVAILABLE_PRODUCTS.map((product) => (
+                    <SelectItem key={product} value={product}>
+                      {product}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           
@@ -298,3 +295,4 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
 };
 
 export default AddClientForm;
+
