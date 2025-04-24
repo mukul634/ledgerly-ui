@@ -3,6 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
 import { 
   Dialog, 
   DialogContent, 
@@ -18,9 +21,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { toast } from "sonner";
 import { useNumberInput } from "@/hooks/useNumberInput";
 import { convertToBikramSambat } from "@/utils/dateConverter";
+import { cn } from "@/lib/utils";
 
 const AVAILABLE_PRODUCTS = [
   "Co-operative Software",
@@ -206,13 +215,40 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             
             <div className="space-y-2">
               <Label htmlFor="installDate">Install Date</Label>
-              <Input 
-                id="installDate" 
-                name="installDate" 
-                type="date" 
-                value={formData.installDate} 
-                onChange={handleChange} 
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !formData.installDate && "text-muted-foreground"
+                    )}
+                  >
+                    {formData.installDate ? (
+                      formatDateDisplay(formData.installDate)
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.installDate ? new Date(formData.installDate) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        setFormData(prev => ({
+                          ...prev,
+                          installDate: format(date, 'yyyy-MM-dd')
+                        }));
+                      }
+                    }}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
               {formData.installDate && (
                 <p className="text-sm text-muted-foreground">
                   {formatDateDisplay(formData.installDate)}
@@ -222,13 +258,40 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             
             <div className="space-y-2">
               <Label htmlFor="renewalDate">Renewal Date</Label>
-              <Input 
-                id="renewalDate" 
-                name="renewalDate" 
-                type="date" 
-                value={formData.renewalDate} 
-                onChange={handleChange} 
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !formData.renewalDate && "text-muted-foreground"
+                    )}
+                  >
+                    {formData.renewalDate ? (
+                      formatDateDisplay(formData.renewalDate)
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.renewalDate ? new Date(formData.renewalDate) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        setFormData(prev => ({
+                          ...prev,
+                          renewalDate: format(date, 'yyyy-MM-dd')
+                        }));
+                      }
+                    }}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
               {formData.renewalDate && (
                 <p className="text-sm text-muted-foreground">
                   {formatDateDisplay(formData.renewalDate)}
@@ -238,13 +301,45 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
-              <Input 
-                id="startDate" 
-                name="startDate" 
-                type="date" 
-                value={formData.startDate} 
-                onChange={handleChange} 
-              />
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant={"outline"}
+                    className={cn(
+                      "w-full pl-3 text-left font-normal",
+                      !formData.startDate && "text-muted-foreground"
+                    )}
+                  >
+                    {formData.startDate ? (
+                      formatDateDisplay(formData.startDate)
+                    ) : (
+                      <span>Pick a date</span>
+                    )}
+                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={formData.startDate ? new Date(formData.startDate) : undefined}
+                    onSelect={(date) => {
+                      if (date) {
+                        setFormData(prev => ({
+                          ...prev,
+                          startDate: format(date, 'yyyy-MM-dd')
+                        }));
+                      }
+                    }}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              {formData.startDate && (
+                <p className="text-sm text-muted-foreground">
+                  {formatDateDisplay(formData.startDate)}
+                </p>
+              )}
             </div>
             
             <div className="space-y-2">
