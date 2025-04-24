@@ -13,18 +13,33 @@ const Index = () => {
   const [showingOverdueDetails, setShowingOverdueDetails] = useState(false);
   const [showingRenewalDetails, setShowingRenewalDetails] = useState(false);
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
-
-  const overdueClients = [
-    { id: "CL001", name: "Tech Solutions Inc.", amount: 1250.00, dueDate: "2023-09-15" },
+  const [clients, setClients] = useState([
+    {
+      id: "CL001",
+      companyName: "Tech Solutions Inc.",
+      district: "Central",
+      phoneNo: "123-456-7890",
+      fullName: "John Doe",
+      address: "123 Main St, City",
+      mobileNo: "987-654-3210",
+      renewalDate: "2023-10-15",
+      installDate: "2022-10-15",
+      agentName: "Sarah Johnson",
+      panNo: "ABCPD1234E",
+      dueAmount: 1250.00,
+      remarks: "Premium client",
+      productsUsed: "Co-operative Software",
+      clientStatus: "Active",
+      startDate: "2022-10-01",
+      closeDate: ""
+    },
     { id: "CL003", name: "Innovative Systems", amount: 750.00, dueDate: "2023-09-10" },
     { id: "CL005", name: "Future Tech Inc.", amount: 1000.00, dueDate: "2023-08-30" },
-  ];
+  ]);
 
-  const pendingRenewals = [
-    { id: "CL001", name: "Tech Solutions Inc.", renewalDate: "2023-09-25", amount: 1500.00 },
-    { id: "CL003", name: "Innovative Systems", renewalDate: "2023-09-20", amount: 950.00 },
-    { id: "CL005", name: "Future Tech Inc.", renewalDate: "2023-09-22", amount: 850.00 },
-  ];
+  const handleAddClient = (newClient: any) => {
+    setClients(prev => [...prev, newClient]);
+  };
 
   return (
     <MainLayout>
@@ -87,13 +102,13 @@ const Index = () => {
           </Card>
         </div>
         
-        <ClientsTable />
+        <ClientsTable clients={clients} setClients={setClients} />
       </div>
 
       <AddClientForm 
         open={isAddClientOpen} 
         onOpenChange={setIsAddClientOpen} 
-        onAddClient={() => setIsAddClientOpen(false)} 
+        onAddClient={handleAddClient} 
       />
 
       <Dialog open={showingClientDetails} onOpenChange={setShowingClientDetails}>

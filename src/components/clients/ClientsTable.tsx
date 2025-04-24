@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -16,121 +15,16 @@ import ClientDetail from "./ClientDetail";
 import AddClientForm from "./AddClientForm";
 import { convertToBikramSambat } from "@/utils/dateConverter";
 
-// Mock data for clients
-const mockClients = [
-  {
-    id: "CL001",
-    companyName: "Tech Solutions Inc.",
-    district: "Central",
-    phoneNo: "123-456-7890",
-    fullName: "John Doe",
-    address: "123 Main St, City",
-    mobileNo: "987-654-3210",
-    renewalDate: "2023-10-15",
-    installDate: "2022-10-15",
-    agentName: "Sarah Johnson",
-    panNo: "ABCPD1234E",
-    dueAmount: 1250.00,
-    representative: "Michael Brown",
-    remarks: "Premium client",
-    productsUsed: "Co-operative Software, Tradesoft",
-    clientStatus: "Active",
-    startDate: "2022-10-01",
-    closeDate: "",
-    smsRate: 0.50
-  },
-  {
-    id: "CL002",
-    companyName: "Global Enterprises",
-    district: "North",
-    phoneNo: "111-222-3333",
-    fullName: "Emma Wilson",
-    address: "456 Oak St, Town",
-    mobileNo: "444-555-6666",
-    renewalDate: "2023-11-20",
-    installDate: "2022-11-20",
-    agentName: "David Clark",
-    panNo: "XYZPD5678F",
-    dueAmount: 0.00,
-    representative: "Jennifer White",
-    remarks: "New client",
-    productsUsed: "Schoolpro",
-    clientStatus: "Active",
-    startDate: "2022-11-01",
-    closeDate: "",
-    smsRate: 0.45
-  },
-  {
-    id: "CL003",
-    companyName: "Innovative Systems",
-    district: "East",
-    phoneNo: "777-888-9999",
-    fullName: "Robert Green",
-    address: "789 Pine St, Village",
-    mobileNo: "123-987-6543",
-    renewalDate: "2023-09-05",
-    installDate: "2022-09-05",
-    agentName: "Linda Martinez",
-    panNo: "LMNPD9101G",
-    dueAmount: 750.00,
-    representative: "Thomas Lee",
-    remarks: "Requires follow-up",
-    productsUsed: "Co-operative Software, Nepalgenetics",
-    clientStatus: "Pending",
-    startDate: "2022-09-01",
-    closeDate: "",
-    smsRate: 0.55
-  },
-  {
-    id: "CL004",
-    companyName: "Premier Solutions",
-    district: "West",
-    phoneNo: "444-333-2222",
-    fullName: "Alice Cooper",
-    address: "101 Maple St, County",
-    mobileNo: "555-666-7777",
-    renewalDate: "2023-12-10",
-    installDate: "2022-12-10",
-    agentName: "Mark Wilson",
-    panNo: "PQRPD1213H",
-    dueAmount: 500.00,
-    representative: "Patricia Brown",
-    remarks: "High-value client",
-    productsUsed: "Complete Suite",
-    clientStatus: "Active",
-    startDate: "2022-12-01",
-    closeDate: "",
-    smsRate: 0.60
-  },
-  {
-    id: "CL005",
-    companyName: "Future Tech Inc.",
-    district: "South",
-    phoneNo: "999-888-7777",
-    fullName: "Daniel Smith",
-    address: "202 Cedar St, Metro",
-    mobileNo: "111-222-3333",
-    renewalDate: "2023-08-25",
-    installDate: "2022-08-25",
-    agentName: "Jessica Adams",
-    panNo: "STUVD1415I",
-    dueAmount: 1000.00,
-    representative: "Richard Taylor",
-    remarks: "Technical support priority",
-    productsUsed: "Tax Manager, Invoice System",
-    clientStatus: "Active",
-    startDate: "2022-08-01",
-    closeDate: "",
-    smsRate: 0.50
-  }
-];
+interface ClientsTableProps {
+  clients: any[];
+  setClients: (clients: any[]) => void;
+}
 
-const ClientsTable = () => {
+const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClient, setSelectedClient] = useState<any>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [clientToDelete, setClientToDelete] = useState<string | null>(null);
-  const [clients, setClients] = useState(mockClients);
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
 
   const filteredClients = clients.filter((client) => 
@@ -149,19 +43,18 @@ const ClientsTable = () => {
   };
 
   const confirmDelete = () => {
-    setClients(prevClients => prevClients.filter(client => client.id !== clientToDelete));
+    setClients(clients.filter(client => client.id !== clientToDelete));
     toast.success(`Client ${clientToDelete} has been deleted`);
     setIsDeleteDialogOpen(false);
     setClientToDelete(null);
     
-    // If the deleted client is currently selected, clear the selection
     if (selectedClient && selectedClient.id === clientToDelete) {
       setSelectedClient(null);
     }
   };
   
   const handleAddClient = (newClient: any) => {
-    setClients(prevClients => [...prevClients, newClient]);
+    setClients([...clients, newClient]);
     toast.success("Client added successfully");
     setIsAddClientOpen(false);
   };
