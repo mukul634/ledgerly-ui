@@ -90,7 +90,8 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
   };
 
   const formatDateDisplay = (date: string) => {
-    return date ? convertToBikramSambat(date) : '';
+    if (!date) return '';
+    return convertToBikramSambat(date);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -245,7 +246,7 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                       }
                     }}
                     initialFocus
-                    className="p-3 pointer-events-auto"
+                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>
@@ -288,7 +289,7 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                       }
                     }}
                     initialFocus
-                    className="p-3 pointer-events-auto"
+                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>
@@ -331,7 +332,7 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                       }
                     }}
                     initialFocus
-                    className="p-3 pointer-events-auto"
+                    className={cn("p-3 pointer-events-auto")}
                   />
                 </PopoverContent>
               </Popover>
