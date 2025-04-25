@@ -14,7 +14,8 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
-  const formatCaption = (month: Date, options?: { locale?: Locale }) => {
+  // Adding proper type annotation for options parameter to fix the error
+  const formatCaption = (month: Date, options?: { locale?: any }) => {
     return convertToBikramSambat(month.toISOString().split('T')[0]);
   };
 
