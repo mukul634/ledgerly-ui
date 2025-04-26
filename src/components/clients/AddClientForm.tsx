@@ -45,6 +45,11 @@ interface AddClientFormProps {
   onAddClient: (client: any) => void;
 }
 
+const formatDateDisplay = (date: string) => {
+  if (!date) return '';
+  return convertToBikramSambat(date);
+};
+
 const RenewalDateButton = ({ selectedDate, onSelect }: { selectedDate: string, onSelect: (date: string) => void }) => {
   const options = [
     { label: "6 Months", months: 6 },
@@ -157,11 +162,6 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
       ...prev,
       productsUsed: value
     }));
-  };
-
-  const formatDateDisplay = (date: string) => {
-    if (!date) return '';
-    return convertToBikramSambat(date);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
