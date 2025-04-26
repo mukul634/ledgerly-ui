@@ -167,6 +167,16 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!formData.renewalDate) {
+      toast.error("Please select a renewal date");
+      return;
+    }
+
+    if (formData.dueAmount <= 0) {
+      toast.error("Please enter a valid due amount");
+      return;
+    }
+    
     const newClient = {
       ...formData,
       id: `CL${Math.floor(100 + Math.random() * 900)}`,
@@ -328,7 +338,7 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="renewalDate">Renewal Date</Label>
+              <Label htmlFor="renewalDate">Renewal Date*</Label>
               <RenewalDateButton
                 selectedDate={formData.renewalDate}
                 onSelect={(date) => {
@@ -389,7 +399,7 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="dueAmount">Due Amount</Label>
+              <Label htmlFor="dueAmount">Due Amount*</Label>
               <Input 
                 id="dueAmount" 
                 name="dueAmount" 
@@ -397,7 +407,8 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                 step="100"
                 min="0"
                 value={formData.dueAmount} 
-                onChange={handleChange} 
+                onChange={handleChange}
+                required 
               />
             </div>
             
