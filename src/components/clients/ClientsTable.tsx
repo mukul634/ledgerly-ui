@@ -13,7 +13,7 @@ import {
 import { toast } from "sonner";
 import ClientDetail from "./ClientDetail";
 import AddClientForm from "./AddClientForm";
-import { convertToBikramSambat } from "@/utils/dateConverter";
+import { format } from 'date-fns';
 
 interface ClientsTableProps {
   clients: any[];
@@ -105,7 +105,6 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
               <TableHead>District</TableHead>
               <TableHead>Phone No</TableHead>
               <TableHead>Renewal Date</TableHead>
-              <TableHead>Renewal Date (BS)</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Due Amount</TableHead>
               <TableHead>Actions</TableHead>
@@ -123,8 +122,7 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
                   <TableCell>{client.companyName}</TableCell>
                   <TableCell>{client.district}</TableCell>
                   <TableCell>{client.phoneNo}</TableCell>
-                  <TableCell>{client.renewalDate}</TableCell>
-                  <TableCell>{convertToBikramSambat(client.renewalDate)}</TableCell>
+                  <TableCell>{format(new Date(client.renewalDate), 'PPP')}</TableCell>
                   <TableCell>
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       client.clientStatus === 'Active' 

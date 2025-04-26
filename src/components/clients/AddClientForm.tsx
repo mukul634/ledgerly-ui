@@ -28,7 +28,6 @@ import {
 } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { useNumberInput } from "@/hooks/useNumberInput";
-import { convertToBikramSambat } from "@/utils/dateConverter";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
@@ -44,11 +43,6 @@ interface AddClientFormProps {
   onOpenChange: (open: boolean) => void;
   onAddClient: (client: any) => void;
 }
-
-const formatDateDisplay = (date: string) => {
-  if (!date) return '';
-  return convertToBikramSambat(date);
-};
 
 const RenewalDateButton = ({ selectedDate, onSelect }: { selectedDate: string, onSelect: (date: string) => void }) => {
   const options = [
@@ -68,7 +62,7 @@ const RenewalDateButton = ({ selectedDate, onSelect }: { selectedDate: string, o
           )}
         >
           {selectedDate ? (
-            formatDateDisplay(selectedDate)
+            format(new Date(selectedDate), 'PPP')
           ) : (
             <span>Pick a renewal date</span>
           )}
@@ -294,6 +288,7 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
               />
             </div>
             
+            {/* Date fields with English format */}
             <div className="space-y-2">
               <Label htmlFor="installDate">Install Date</Label>
               <Popover>
@@ -306,7 +301,7 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                     )}
                   >
                     {formData.installDate ? (
-                      formatDateDisplay(formData.installDate)
+                      format(new Date(formData.installDate), 'PPP')
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -330,11 +325,6 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                   />
                 </PopoverContent>
               </Popover>
-              {formData.installDate && (
-                <p className="text-sm text-muted-foreground">
-                  {formatDateDisplay(formData.installDate)}
-                </p>
-              )}
             </div>
             
             <div className="space-y-2">
@@ -348,11 +338,6 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                   }));
                 }}
               />
-              {formData.renewalDate && (
-                <p className="text-sm text-muted-foreground">
-                  {formatDateDisplay(formData.renewalDate)}
-                </p>
-              )}
             </div>
             
             <div className="space-y-2">
@@ -367,7 +352,7 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                     )}
                   >
                     {formData.startDate ? (
-                      formatDateDisplay(formData.startDate)
+                      format(new Date(formData.startDate), 'PPP')
                     ) : (
                       <span>Pick a date</span>
                     )}
@@ -391,11 +376,6 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                   />
                 </PopoverContent>
               </Popover>
-              {formData.startDate && (
-                <p className="text-sm text-muted-foreground">
-                  {formatDateDisplay(formData.startDate)}
-                </p>
-              )}
             </div>
             
             <div className="space-y-2">
