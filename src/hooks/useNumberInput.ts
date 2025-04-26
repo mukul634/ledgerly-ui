@@ -2,7 +2,10 @@
 export const useNumberInput = () => {
   const handleNumberInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (!/^\d*$/.test(value)) {
+    const isNumeric = /^\d*$/.test(value);
+    const isValidLength = value.length <= 10;
+    
+    if (!isNumeric || !isValidLength) {
       e.preventDefault();
       return false;
     }
@@ -11,3 +14,4 @@ export const useNumberInput = () => {
 
   return { handleNumberInput };
 };
+

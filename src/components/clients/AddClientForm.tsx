@@ -170,6 +170,16 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
       toast.error("Please enter a valid due amount");
       return;
     }
+
+    if (formData.phoneNo && formData.phoneNo.length !== 10) {
+      toast.error("Phone number must be exactly 10 digits");
+      return;
+    }
+
+    if (formData.mobileNo && formData.mobileNo.length !== 10) {
+      toast.error("Mobile number must be exactly 10 digits");
+      return;
+    }
     
     const newClient = {
       ...formData,
@@ -248,8 +258,11 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                 name="phoneNo" 
                 value={formData.phoneNo} 
                 onChange={handleChange}
-                pattern="\d*"
+                pattern="\d{10}"
                 inputMode="numeric"
+                minLength={10}
+                maxLength={10}
+                placeholder="10 digit number"
                 required
               />
             </div>
@@ -261,8 +274,11 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
                 name="mobileNo" 
                 value={formData.mobileNo} 
                 onChange={handleChange}
-                pattern="\d*"
+                pattern="\d{10}"
                 inputMode="numeric"
+                minLength={10}
+                maxLength={10}
+                placeholder="10 digit number"
               />
             </div>
             
@@ -288,7 +304,6 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
               />
             </div>
             
-            {/* Date fields with English format */}
             <div className="space-y-2">
               <Label htmlFor="installDate">Install Date</Label>
               <Popover>
