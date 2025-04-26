@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,63 +9,48 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
-// Mock daybook data
-const mockDaybook = [
-  {
-    id: "DB001",
-    date: "2023-09-15",
-    companyName: "Tech Solutions Inc.",
-    softwareName: "Financial Suite",
-    paymentMode: "Bank Transfer",
-    amount: 1500.00,
-    type: "income"
-  },
-  {
-    id: "DB002",
-    date: "2023-09-15",
-    companyName: "Global Enterprises",
-    softwareName: "Ledger Pro",
-    paymentMode: "Credit Card",
-    amount: 1200.00,
-    type: "income"
-  },
-  {
-    id: "DB003",
-    date: "2023-09-16",
-    companyName: "Innovative Systems",
-    softwareName: "Invoice Manager",
-    paymentMode: "Cash",
-    amount: 950.00,
-    type: "income"
-  },
-  {
-    id: "DB004",
-    date: "2023-09-16",
-    companyName: "Office Supplies",
-    softwareName: "N/A",
-    paymentMode: "Bank Transfer",
-    amount: 350.00,
-    type: "expense"
-  },
-  {
-    id: "DB005",
-    date: "2023-09-17",
-    companyName: "Premier Solutions",
-    softwareName: "Complete Suite",
-    paymentMode: "Check",
-    amount: 2200.00,
-    type: "income"
-  }
-];
+// Create a type for our transaction data
+type Transaction = {
+  id: string;
+  date: string;
+  companyName: string;
+  softwareName: string;
+  paymentMode: string;
+  amount: number;
+  type: 'income' | 'expense';
+};
+
+// Function to get transactions from localStorage
+const getTransactions = (): Transaction[] => {
+  const storedTransactions = localStorage.getItem('transactions');
+  return storedTransactions ? JSON.parse(storedTransactions) : [];
+};
 
 const Daybook = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [transactions, setTransactions] = useState<Transaction[]>(getTransactions());
   
-  const totalIncome = mockDaybook
+  // Update transactions when localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setTransactions(getTransactions());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Also check for updates every 5 seconds
+    const interval = setInterval(handleStorageChange, 5000);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+  
+  const totalIncome = transactions
     .filter(item => item.type === "income")
     .reduce((sum, item) => sum + item.amount, 0);
     
-  const totalExpense = mockDaybook
+  const totalExpense = transactions
     .filter(item => item.type === "expense")
     .reduce((sum, item) => sum + item.amount, 0);
 
@@ -156,27 +140,35 @@ const Daybook = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockDaybook.map((entry) => (
-                  <TableRow 
-                    key={entry.id} 
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <TableCell>{entry.date}</TableCell>
-                    <TableCell>{entry.companyName}</TableCell>
-                    <TableCell>{entry.softwareName}</TableCell>
-                    <TableCell>{entry.paymentMode}</TableCell>
-                    <TableCell className="text-right">₹{entry.amount.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        entry.type === 'income' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
-                        {entry.type === 'income' ? 'Income' : 'Expense'}
-                      </span>
+                {transactions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground">
+                      No transactions found
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  transactions.map((entry) => (
+                    <TableRow 
+                      key={entry.id} 
+                      className="hover:bg-muted/50 transition-colors"
+                    >
+                      <TableCell>{entry.date}</TableCell>
+                      <TableCell>{entry.companyName}</TableCell>
+                      <TableCell>{entry.softwareName}</TableCell>
+                      <TableCell>{entry.paymentMode}</TableCell>
+                      <TableCell className="text-right">₹{entry.amount.toFixed(2)}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          entry.type === 'income' 
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                            : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                        }`}>
+                          {entry.type === 'income' ? 'Income' : 'Expense'}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
