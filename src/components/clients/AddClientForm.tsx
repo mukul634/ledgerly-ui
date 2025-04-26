@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { useNumberInput } from "@/hooks/useNumberInput";
 import { convertToBikramSambat } from "@/utils/dateConverter";
 import { cn } from "@/lib/utils";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 
 const AVAILABLE_PRODUCTS = [
   "Co-operative Software",
@@ -43,6 +44,75 @@ interface AddClientFormProps {
   onOpenChange: (open: boolean) => void;
   onAddClient: (client: any) => void;
 }
+
+const RenewalDateButton = ({ selectedDate, onSelect }: { selectedDate: string, onSelect: (date: string) => void }) => {
+  const options = [
+    { label: "6 Months", months: 6 },
+    { label: "1 Year", months: 12 },
+    { label: "2 Years", months: 24 }
+  ];
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant={"outline"}
+          className={cn(
+            "w-full pl-3 text-left font-normal",
+            !selectedDate && "text-muted-foreground"
+          )}
+        >
+          {selectedDate ? (
+            formatDateDisplay(selectedDate)
+          ) : (
+            <span>Pick a renewal date</span>
+          )}
+          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="start">
+        <DropdownMenuLabel>Quick Select</DropdownMenuLabel>
+        {options.map((option) => (
+          <DropdownMenuItem
+            key={option.months}
+            onClick={() => {
+              const date = new Date();
+              date.setMonth(date.getMonth() + option.months);
+              onSelect(format(date, 'yyyy-MM-dd'));
+            }}
+          >
+            Add {option.label}
+          </DropdownMenuItem>
+        ))}
+        <DropdownMenuSeparator />
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              className="w-full justify-start font-normal"
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Custom Date
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={selectedDate ? new Date(selectedDate) : undefined}
+              onSelect={(date) => {
+                if (date) {
+                  onSelect(format(date, 'yyyy-MM-dd'));
+                }
+              }}
+              initialFocus
+              className={cn("p-3 pointer-events-auto")}
+            />
+          </PopoverContent>
+        </Popover>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+};
 
 const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) => {
   const { handleNumberInput } = useNumberInput();
@@ -259,40 +329,15 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
             
             <div className="space-y-2">
               <Label htmlFor="renewalDate">Renewal Date</Label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full pl-3 text-left font-normal",
-                      !formData.renewalDate && "text-muted-foreground"
-                    )}
-                  >
-                    {formData.renewalDate ? (
-                      formatDateDisplay(formData.renewalDate)
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={formData.renewalDate ? new Date(formData.renewalDate) : undefined}
-                    onSelect={(date) => {
-                      if (date) {
-                        setFormData(prev => ({
-                          ...prev,
-                          renewalDate: format(date, 'yyyy-MM-dd')
-                        }));
-                      }
-                    }}
-                    initialFocus
-                    className={cn("p-3 pointer-events-auto")}
-                  />
-                </PopoverContent>
-              </Popover>
+              <RenewalDateButton
+                selectedDate={formData.renewalDate}
+                onSelect={(date) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    renewalDate: date
+                  }));
+                }}
+              />
               {formData.renewalDate && (
                 <p className="text-sm text-muted-foreground">
                   {formatDateDisplay(formData.renewalDate)}
