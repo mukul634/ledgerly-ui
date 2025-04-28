@@ -74,7 +74,7 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
         <div className="flex gap-2">
           <Button 
             onClick={() => setIsAddClientOpen(true)}
-            className="bg-finblue-700 hover:bg-finblue-800"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
           >
             <UserPlus className="mr-2 h-4 w-4" />
             Add Client

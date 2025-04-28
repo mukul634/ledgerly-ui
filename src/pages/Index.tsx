@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import ClientsTable from "@/components/clients/ClientsTable";
@@ -102,7 +101,7 @@ const Index = () => {
           </div>
           <Button 
             onClick={() => setIsAddClientOpen(true)}
-            className="bg-finblue-700 hover:bg-finblue-800"
+            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
           >
             <UserPlus className="mr-2 h-4 w-4" />
             Add Client
