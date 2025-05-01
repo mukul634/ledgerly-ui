@@ -10,8 +10,7 @@ import {
   SidebarMenuItem, 
   SidebarMenuButton, 
   SidebarGroup, 
-  SidebarGroupContent, 
-  SidebarGroupLabel,
+  SidebarGroupContent,
   useSidebar
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
@@ -43,7 +42,6 @@ const AppSidebar = () => {
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-lg">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
