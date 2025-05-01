@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import ClientsTable from "@/components/clients/ClientsTable";
@@ -7,6 +8,7 @@ import { Users, FileText, AlertCircle, UserPlus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { format, isBefore, addDays } from "date-fns";
 
 const Index = () => {
   const [showingClientDetails, setShowingClientDetails] = useState(false);
@@ -31,7 +33,8 @@ const Index = () => {
       productsUsed: "Co-operative Software",
       clientStatus: "Active",
       startDate: "2022-10-01",
-      closeDate: ""
+      closeDate: "",
+      smsRate: 0.50
     },
     { 
       id: "CL003", 
@@ -50,7 +53,8 @@ const Index = () => {
       productsUsed: "Accounting Software",
       clientStatus: "Active",
       startDate: "2022-09-01",
-      closeDate: "" 
+      closeDate: "",
+      smsRate: 0.45
     },
     { 
       id: "CL005", 
@@ -69,23 +73,35 @@ const Index = () => {
       productsUsed: "Inventory Management",
       clientStatus: "Pending",
       startDate: "2022-08-15",
-      closeDate: "" 
+      closeDate: "",
+      smsRate: 0.55
     },
   ]);
 
-  // Define the overdueClients array
-  const overdueClients = [
-    { id: "CL001", name: "Tech Solutions Inc.", amount: 1250.00, dueDate: "2023-08-15" },
-    { id: "CL003", name: "Innovative Systems", amount: 750.00, dueDate: "2023-09-10" },
-    { id: "CL005", name: "Future Tech Inc.", amount: 1000.00, dueDate: "2023-08-30" }
-  ];
-
-  // Define the pendingRenewals array
-  const pendingRenewals = [
-    { id: "CL001", name: "Tech Solutions Inc.", renewalDate: "2023-10-15", amount: 1500.00 },
-    { id: "CL003", name: "Innovative Systems", renewalDate: "2023-09-10", amount: 800.00 },
-    { id: "CL005", name: "Future Tech Inc.", renewalDate: "2023-08-30", amount: 1000.00 }
-  ];
+  // Calculate total clients
+  const totalClients = clients.length;
+  const activeClients = clients.filter(client => client.clientStatus === "Active").length;
+  const pendingClients = clients.filter(client => client.clientStatus === "Pending").length;
+  
+  // Calculate total overdue amount 
+  const totalOverdueAmount = clients.reduce((sum, client) => sum + client.dueAmount, 0);
+  
+  // Calculate pending renewals
+  const today = new Date();
+  const thirtyDaysFromNow = addDays(today, 30);
+  
+  const pendingRenewals = clients.filter(client => {
+    const renewalDate = new Date(client.renewalDate);
+    return !isBefore(renewalDate, today) && isBefore(renewalDate, thirtyDaysFromNow);
+  });
+  
+  // Generate real overdue clients data
+  const overdueClients = clients.map(client => ({
+    id: client.id,
+    name: client.companyName,
+    amount: client.dueAmount,
+    dueDate: client.renewalDate
+  }));
 
   const handleAddClient = (newClient: any) => {
     setClients(prev => [...prev, newClient]);
@@ -118,8 +134,10 @@ const Index = () => {
               />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">254</div>
-              <p className="text-xs text-muted-foreground">+5 from last month</p>
+              <div className="text-2xl font-bold">{totalClients}</div>
+              <p className="text-xs text-muted-foreground">
+                {activeClients} active, {pendingClients} pending
+              </p>
             </CardContent>
           </Card>
           
@@ -132,8 +150,8 @@ const Index = () => {
               />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">Rs. 12,578.35</div>
-              <p className="text-xs text-muted-foreground">+2.5% from last month</p>
+              <div className="text-2xl font-bold">Rs. {totalOverdueAmount.toFixed(2)}</div>
+              <p className="text-xs text-muted-foreground">From {clients.filter(c => c.dueAmount > 0).length} clients</p>
             </CardContent>
           </Card>
           
@@ -146,7 +164,7 @@ const Index = () => {
               />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">18</div>
+              <div className="text-2xl font-bold">{pendingRenewals.length}</div>
               <p className="text-xs text-muted-foreground">Due within 30 days</p>
             </CardContent>
           </Card>
@@ -170,15 +188,15 @@ const Index = () => {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               <div className="bg-muted p-4 rounded-lg text-center">
                 <p className="text-sm text-muted-foreground">Active Clients</p>
-                <p className="text-2xl font-bold">214</p>
+                <p className="text-2xl font-bold">{activeClients}</p>
               </div>
               <div className="bg-muted p-4 rounded-lg text-center">
                 <p className="text-sm text-muted-foreground">Pending Clients</p>
-                <p className="text-2xl font-bold">32</p>
+                <p className="text-2xl font-bold">{pendingClients}</p>
               </div>
               <div className="bg-muted p-4 rounded-lg text-center">
                 <p className="text-sm text-muted-foreground">Inactive Clients</p>
-                <p className="text-2xl font-bold">8</p>
+                <p className="text-2xl font-bold">{clients.filter(c => c.clientStatus !== "Active" && c.clientStatus !== "Pending").length}</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground mb-4">Client acquisition in last 12 months</p>
@@ -215,7 +233,7 @@ const Index = () => {
                 ))}
                 <TableRow>
                   <TableCell colSpan={3} className="text-right font-bold">Total Overdue</TableCell>
-                  <TableCell className="font-bold">Rs. 3,000.00</TableCell>
+                  <TableCell className="font-bold">Rs. {totalOverdueAmount.toFixed(2)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -242,14 +260,14 @@ const Index = () => {
                 {pendingRenewals.map(renewal => (
                   <TableRow key={renewal.id}>
                     <TableCell>{renewal.id}</TableCell>
-                    <TableCell>{renewal.name}</TableCell>
+                    <TableCell>{renewal.companyName}</TableCell>
                     <TableCell>{renewal.renewalDate}</TableCell>
-                    <TableCell>Rs. {renewal.amount.toFixed(2)}</TableCell>
+                    <TableCell>Rs. {renewal.dueAmount.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
                 <TableRow>
                   <TableCell colSpan={3} className="text-right font-bold">Total Renewals</TableCell>
-                  <TableCell className="font-bold">Rs. 3,300.00</TableCell>
+                  <TableCell className="font-bold">Rs. {pendingRenewals.reduce((sum, client) => sum + client.dueAmount, 0).toFixed(2)}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -261,3 +279,4 @@ const Index = () => {
 };
 
 export default Index;
+
