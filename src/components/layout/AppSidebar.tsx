@@ -1,5 +1,5 @@
 
-import { Home, FileText, Calendar, RefreshCw, Network, Sun, Moon } from "lucide-react";
+import { Home, FileText, Calendar, RefreshCw, Network, Sun, Moon, FileImage } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { 
   Sidebar, 
@@ -32,16 +32,18 @@ const AppSidebar = () => {
 
   return (
     <Sidebar variant="sidebar">
-      <SidebarHeader className="flex flex-col items-center justify-center px-4 py-5">
+      <SidebarHeader className="flex flex-col items-center justify-center px-4 py-6">
         <div className="flex flex-col items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-finblue-800 text-white font-bold text-lg">FL</div>
+          <div className="flex h-14 w-14 items-center justify-center rounded-md bg-finblue-800 text-white">
+            <FileImage className="h-8 w-8" />
+          </div>
           <span className="text-2xl font-bold text-finblue-800 dark:text-white text-center">FinLedger</span>
         </div>
       </SidebarHeader>
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-base">Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-lg">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -53,8 +55,8 @@ const AppSidebar = () => {
                     size="lg"
                   >
                     <a href={item.path} className="flex items-center gap-3">
-                      <item.icon className="h-6 w-6" />
-                      <span className="text-base font-medium">{item.label}</span>
+                      <item.icon className="h-7 w-7" />
+                      <span className="text-lg font-medium">{item.label}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
