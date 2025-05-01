@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileText, Download, Trash2, ChevronDown, PlusCircle, UserPlus } from "lucide-react";
+import { Search, FileText, Download, Trash2, ChevronDown, PlusCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { 
   DropdownMenu, 
@@ -62,7 +62,7 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row justify-between gap-4">
-        <div className="relative w-full sm:w-96">
+        <div className="relative w-full">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search clients..."
@@ -72,14 +72,6 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
           />
         </div>
         <div className="flex gap-2">
-          <Button 
-            onClick={() => setIsAddClientOpen(true)}
-            className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
-          >
-            <UserPlus className="mr-2 h-4 w-4" />
-            Add Client
-          </Button>
-          
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">

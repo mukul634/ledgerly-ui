@@ -32,16 +32,16 @@ const AppSidebar = () => {
 
   return (
     <Sidebar variant="sidebar">
-      <SidebarHeader className="flex items-center px-4 py-3">
-        <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-finblue-800 text-white font-bold">FL</div>
-          <span className="text-lg font-bold text-finblue-800 dark:text-white">FinLedger</span>
+      <SidebarHeader className="flex flex-col items-center justify-center px-4 py-5">
+        <div className="flex flex-col items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md bg-finblue-800 text-white font-bold text-lg">FL</div>
+          <span className="text-2xl font-bold text-finblue-800 dark:text-white text-center">FinLedger</span>
         </div>
       </SidebarHeader>
       
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-base">Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
@@ -50,10 +50,11 @@ const AppSidebar = () => {
                     asChild 
                     isActive={location.pathname === item.path}
                     tooltip={item.label}
+                    size="lg"
                   >
-                    <a href={item.path} className="flex items-center gap-2">
-                      <item.icon className="h-5 w-5" />
-                      <span>{item.label}</span>
+                    <a href={item.path} className="flex items-center gap-3">
+                      <item.icon className="h-6 w-6" />
+                      <span className="text-base font-medium">{item.label}</span>
                     </a>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -68,17 +69,17 @@ const AppSidebar = () => {
           variant="ghost" 
           size="icon" 
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="w-full justify-start px-3"
+          className="w-full justify-start px-3 py-6"
         >
           {theme === "dark" ? (
             <>
-              <Sun className="h-5 w-5 mr-3" />
-              <span>Light Mode</span>
+              <Sun className="h-6 w-6 mr-3" />
+              <span className="text-base">Light Mode</span>
             </>
           ) : (
             <>
-              <Moon className="h-5 w-5 mr-3" />
-              <span>Dark Mode</span>
+              <Moon className="h-6 w-6 mr-3" />
+              <span className="text-base">Dark Mode</span>
             </>
           )}
         </Button>
