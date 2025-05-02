@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import ClientsTable from "@/components/clients/ClientsTable";
@@ -15,69 +14,8 @@ const Index = () => {
   const [showingOverdueDetails, setShowingOverdueDetails] = useState(false);
   const [showingRenewalDetails, setShowingRenewalDetails] = useState(false);
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
-  const [clients, setClients] = useState([
-    {
-      id: "CL001",
-      companyName: "Tech Solutions Inc.",
-      district: "Central",
-      phoneNo: "123-456-7890",
-      fullName: "John Doe",
-      address: "123 Main St, City",
-      mobileNo: "987-654-3210",
-      renewalDate: "2023-10-15",
-      installDate: "2022-10-15",
-      agentName: "Sarah Johnson",
-      panNo: "ABCPD1234E",
-      dueAmount: 1250.00,
-      remarks: "Premium client",
-      productsUsed: "Co-operative Software",
-      clientStatus: "Active",
-      startDate: "2022-10-01",
-      closeDate: "",
-      smsRate: 0.50
-    },
-    { 
-      id: "CL003", 
-      companyName: "Innovative Systems", 
-      district: "South",
-      phoneNo: "555-123-4567",
-      fullName: "Robert Smith",
-      address: "456 Tech Ave, Town",
-      mobileNo: "777-888-9999",
-      renewalDate: "2023-09-10",
-      installDate: "2022-09-10",
-      agentName: "Linda Martinez",
-      panNo: "XYSPZ9876T",
-      dueAmount: 750.00,
-      remarks: "Regular client",
-      productsUsed: "Accounting Software",
-      clientStatus: "Active",
-      startDate: "2022-09-01",
-      closeDate: "",
-      smsRate: 0.45
-    },
-    { 
-      id: "CL005", 
-      companyName: "Future Tech Inc.", 
-      district: "North",
-      phoneNo: "222-333-4444",
-      fullName: "Emma Johnson",
-      address: "789 Innovation Rd, Village",
-      mobileNo: "111-222-3333",
-      renewalDate: "2023-08-30",
-      installDate: "2022-08-30",
-      agentName: "Mark Wilson",
-      panNo: "LMNOP5432Q",
-      dueAmount: 1000.00,
-      remarks: "New client",
-      productsUsed: "Inventory Management",
-      clientStatus: "Pending",
-      startDate: "2022-08-15",
-      closeDate: "",
-      smsRate: 0.55
-    },
-  ]);
-
+  const [clients, setClients] = useState([]);
+  
   // Calculate total clients
   const totalClients = clients.length;
   const activeClients = clients.filter(client => client.clientStatus === "Active").length;
@@ -170,7 +108,22 @@ const Index = () => {
           </Card>
         </div>
         
-        <ClientsTable clients={clients} setClients={setClients} />
+        {clients.length > 0 ? (
+          <ClientsTable clients={clients} setClients={setClients} />
+        ) : (
+          <div className="flex flex-col items-center justify-center p-8 text-center border rounded-md bg-muted/20">
+            <Users className="h-12 w-12 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Clients Added Yet</h3>
+            <p className="text-muted-foreground mb-4">Get started by adding your first client to the system.</p>
+            <Button 
+              onClick={() => setIsAddClientOpen(true)}
+              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+            >
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Your First Client
+            </Button>
+          </div>
+        )}
       </div>
 
       <AddClientForm 
@@ -279,4 +232,3 @@ const Index = () => {
 };
 
 export default Index;
-

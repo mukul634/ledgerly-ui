@@ -56,10 +56,10 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-950 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1 flex flex-col items-center text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-md bg-finblue-800 text-white mb-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-md bg-blue-600 dark:bg-blue-500 text-white mb-4">
             <FileImage className="h-8 w-8" />
           </div>
-          <CardTitle className="text-2xl font-bold text-finblue-800 dark:text-white">FinLedger</CardTitle>
+          <CardTitle className="text-2xl font-bold text-blue-800 dark:text-white">FinLedger</CardTitle>
           <CardDescription>
             Enter your credentials to access your account
           </CardDescription>
@@ -106,7 +106,7 @@ const Login = () => {
           </CardContent>
           <CardFooter>
             <Button 
-              className="w-full bg-finblue-800 hover:bg-finblue-900" 
+              className="w-full bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white" 
               type="submit" 
               disabled={isLoading}
             >
