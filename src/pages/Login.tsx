@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 const Login = () => {
   const [username, setUsername] = useState("");
@@ -21,6 +22,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,8 +32,8 @@ const Login = () => {
     setTimeout(() => {
       // Demo credentials - Replace with actual authentication logic
       if (username === "admin" && password === "password") {
-        // Store login state in localStorage
-        localStorage.setItem("finledger_user", JSON.stringify({ username, role: "admin" }));
+        // Use the login function from useAuth hook
+        login(username, "admin");
         
         toast({
           title: "Login successful",
