@@ -1,61 +1,98 @@
+
+import { useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Bell, RefreshCw, AlertCircle } from "lucide-react";
 
-// Mock renewal data
-const mockRenewals = [
+// Mock client data (this would typically come from a central store or context)
+const mockClients = [
   {
-    id: "RN001",
-    clientName: "Tech Solutions Inc.",
-    clientId: "CL001",
-    renewalDate: "2023-09-25", // Due in 7 days (if today is 2023-09-18)
-    renewalAmount: 1500.00,
-    agentName: "Sarah Johnson",
-    daysLeft: 7
+    id: "CL001",
+    companyName: "Tech Solutions Inc.",
+    district: "Kathmandu",
+    phoneNo: "123-456-7890",
+    renewalDate: "2023-09-25",
+    clientStatus: "Active",
+    dueAmount: 1500.00,
+    address: "123 Main St, City",
+    products: ["Co-operative Software"]
   },
   {
-    id: "RN002",
-    clientName: "Global Enterprises",
-    clientId: "CL002",
-    renewalDate: "2023-10-10", // Due in 22 days
-    renewalAmount: 1200.00,
-    agentName: "David Clark",
-    daysLeft: 22
+    id: "CL002",
+    companyName: "Global Enterprises",
+    district: "Pokhara",
+    phoneNo: "111-222-3333",
+    renewalDate: "2023-10-10",
+    clientStatus: "Active",
+    dueAmount: 1200.00,
+    address: "456 Oak St, Town",
+    products: ["Tradesoft"]
   },
   {
-    id: "RN003",
-    clientName: "Innovative Systems",
-    clientId: "CL003",
-    renewalDate: "2023-09-20", // Due in 2 days
-    renewalAmount: 950.00,
-    agentName: "Linda Martinez",
-    daysLeft: 2
+    id: "CL003",
+    companyName: "Innovative Systems",
+    district: "Lalitpur",
+    phoneNo: "777-888-9999",
+    renewalDate: "2023-09-20",
+    clientStatus: "Active",
+    dueAmount: 950.00,
+    address: "789 Pine St, Village",
+    products: ["Schoolpro"]
   },
   {
-    id: "RN004",
-    clientName: "Premier Solutions",
-    clientId: "CL004",
-    renewalDate: "2023-10-15", // Due in 27 days
-    renewalAmount: 2200.00,
-    agentName: "Mark Wilson",
-    daysLeft: 27
+    id: "CL004",
+    companyName: "Premier Solutions",
+    district: "Kathmandu",
+    phoneNo: "444-333-2222",
+    renewalDate: "2023-10-15",
+    clientStatus: "Active",
+    dueAmount: 2200.00,
+    address: "101 Maple St, County",
+    products: ["Nepalgenetics"]
   },
   {
-    id: "RN005",
-    clientName: "Future Tech Inc.",
-    clientId: "CL005",
-    renewalDate: "2023-09-22", // Due in 4 days
-    renewalAmount: 850.00,
-    agentName: "Jessica Adams",
-    daysLeft: 4
+    id: "CL005",
+    companyName: "Future Tech Inc.",
+    district: "Biratnagar",
+    phoneNo: "555-666-7777",
+    renewalDate: "2023-09-22",
+    clientStatus: "Pending",
+    dueAmount: 850.00,
+    address: "202 Cedar St, Metro",
+    products: ["Co-operative Software"]
   }
 ];
 
+// Generate renewals from client data
+const generateRenewals = (clients) => {
+  const agents = ["Sarah Johnson", "David Clark", "Linda Martinez", "Mark Wilson", "Jessica Adams"];
+  const today = new Date();
+  
+  return clients.map((client, index) => {
+    const renewalDate = new Date(client.renewalDate);
+    const daysLeft = Math.floor((renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const agentIndex = index % agents.length;
+    
+    return {
+      id: `RN${String(index + 1).padStart(3, '0')}`,
+      clientName: client.companyName,
+      clientId: client.id,
+      renewalDate: client.renewalDate,
+      renewalAmount: client.dueAmount,
+      agentName: agents[agentIndex],
+      daysLeft: daysLeft
+    };
+  });
+};
+
 const Renewal = () => {
-  const urgentRenewals = mockRenewals.filter(renewal => renewal.daysLeft <= 7);
-  const upcomingRenewals = mockRenewals.filter(renewal => renewal.daysLeft > 7 && renewal.daysLeft <= 30);
+  // Generate renewals based on client data
+  const renewals = useMemo(() => generateRenewals(mockClients), []);
+  
+  const urgentRenewals = renewals.filter(renewal => renewal.daysLeft <= 7);
+  const upcomingRenewals = renewals.filter(renewal => renewal.daysLeft > 7 && renewal.daysLeft <= 30);
   
   return (
     <MainLayout>
@@ -191,7 +228,7 @@ const Renewal = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {mockRenewals.map((renewal) => (
+                {renewals.map((renewal) => (
                   <TableRow 
                     key={renewal.id} 
                     className="hover:bg-muted/50 transition-colors"

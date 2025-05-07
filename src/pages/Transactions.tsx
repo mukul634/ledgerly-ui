@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,84 +13,112 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
-// Mock transactions data
-const mockTransactions = [
+// Simulated data to represent client data that would typically come from a central store or context
+const mockClients = [
   {
-    id: "TR001",
-    productName: "Co-operative Software",
-    clientId: "CL001",
-    clientName: "Tech Solutions Inc.",
-    address: "123 Main St, City",
+    id: "CL001",
+    companyName: "Tech Solutions Inc.",
+    district: "Kathmandu",
+    phoneNo: "123-456-7890",
     renewalDate: "2023-10-15",
-    renewalAmount: 1500.00,
-    vat: 195.00,
-    agentName: "Sarah Johnson",
+    clientStatus: "Active",
+    dueAmount: 1500.00,
+    address: "123 Main St, City",
+    products: ["Co-operative Software"]
   },
   {
-    id: "TR002",
-    productName: "Tradesoft",
-    clientId: "CL002",
-    clientName: "Global Enterprises",
-    address: "456 Oak St, Town",
+    id: "CL002",
+    companyName: "Global Enterprises",
+    district: "Pokhara",
+    phoneNo: "111-222-3333",
     renewalDate: "2023-11-20",
-    renewalAmount: 1200.00,
-    vat: 156.00,
-    agentName: "David Clark",
+    clientStatus: "Active",
+    dueAmount: 1200.00,
+    address: "456 Oak St, Town",
+    products: ["Tradesoft"]
   },
   {
-    id: "TR003",
-    productName: "Schoolpro",
-    clientId: "CL003",
-    clientName: "Innovative Systems",
-    address: "789 Pine St, Village",
+    id: "CL003",
+    companyName: "Innovative Systems",
+    district: "Lalitpur",
+    phoneNo: "777-888-9999",
     renewalDate: "2023-09-05",
-    renewalAmount: 950.00,
-    vat: 123.50,
-    agentName: "Linda Martinez",
+    clientStatus: "Active",
+    dueAmount: 950.00,
+    address: "789 Pine St, Village",
+    products: ["Schoolpro"]
   },
   {
-    id: "TR004",
-    productName: "Nepalgenetics",
-    clientId: "CL004",
-    clientName: "Premier Solutions",
-    address: "101 Maple St, County",
+    id: "CL004",
+    companyName: "Premier Solutions",
+    district: "Kathmandu",
+    phoneNo: "444-333-2222",
     renewalDate: "2023-12-10",
-    renewalAmount: 2200.00,
-    vat: 286.00,
-    agentName: "Mark Wilson",
+    clientStatus: "Active",
+    dueAmount: 2200.00,
+    address: "101 Maple St, County",
+    products: ["Nepalgenetics"]
   },
   {
-    id: "TR005",
-    productName: "Co-operative Software",
-    clientId: "CL005",
-    clientName: "Future Tech Inc.",
-    address: "202 Cedar St, Metro",
+    id: "CL005",
+    companyName: "Future Tech Inc.",
+    district: "Biratnagar",
+    phoneNo: "555-666-7777",
     renewalDate: "2023-08-25",
-    renewalAmount: 850.00,
-    vat: 110.50,
-    agentName: "Jessica Adams",
+    clientStatus: "Pending",
+    dueAmount: 850.00,
+    address: "202 Cedar St, Metro",
+    products: ["Co-operative Software"]
   }
 ];
+
+// Generate transactions based on client data
+const generateTransactionsFromClients = (clients) => {
+  const agents = ["Sarah Johnson", "David Clark", "Linda Martinez", "Mark Wilson", "Jessica Adams"];
+  
+  return clients.map((client, index) => {
+    const vatRate = 0.13; // 13% VAT
+    const agentIndex = index % agents.length;
+    const renewalAmount = client.dueAmount;
+    const vat = renewalAmount * vatRate;
+    
+    return {
+      id: `TR${String(index + 1).padStart(3, '0')}`,
+      productName: client.products[0],
+      clientId: client.id,
+      clientName: client.companyName,
+      address: client.address,
+      renewalDate: client.renewalDate,
+      renewalAmount: renewalAmount,
+      vat: vat,
+      agentName: agents[agentIndex]
+    };
+  });
+};
 
 const Transactions = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState("");
+  
+  // Generate transactions from client data
+  const transactions = useMemo(() => generateTransactionsFromClients(mockClients), []);
   
   // Generate a new transaction ID
   const generateTransactionId = () => {
-    const lastTransaction = mockTransactions[mockTransactions.length - 1];
-    const lastId = lastTransaction ? parseInt(lastTransaction.id.substring(2)) : 0;
-    return `TR${String(lastId + 1).padStart(3, '0')}`;
+    return `TR${String(transactions.length + 1).padStart(3, '0')}`;
   };
   
   // Auto-generated values
   const newTransactionId = generateTransactionId();
   const newRecordNo = `REC${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
-  const filteredTransactions = mockTransactions.filter((transaction) => 
+  const filteredTransactions = transactions.filter((transaction) => 
     transaction.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.clientId.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
+  const selectedClient = mockClients.find(client => client.id === selectedClientId);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,11 +155,18 @@ const Transactions = () => {
             <form className="grid grid-cols-1 md:grid-cols-3 gap-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <Label htmlFor="clientSelect">Select Client</Label>
-                <select id="clientSelect" className="w-full p-2 border rounded-md bg-background">
+                <select 
+                  id="clientSelect" 
+                  className="w-full p-2 border rounded-md bg-background"
+                  value={selectedClientId}
+                  onChange={(e) => setSelectedClientId(e.target.value)}
+                >
                   <option value="">Select a client...</option>
-                  <option value="CL001">CL001 - Tech Solutions Inc.</option>
-                  <option value="CL002">CL002 - Global Enterprises</option>
-                  <option value="CL003">CL003 - Innovative Systems</option>
+                  {mockClients.map(client => (
+                    <option key={client.id} value={client.id}>
+                      {client.id} - {client.companyName}
+                    </option>
+                  ))}
                 </select>
               </div>
               
@@ -164,7 +199,13 @@ const Transactions = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="amount">Amount</Label>
-                <Input id="amount" type="number" placeholder="0.00" />
+                <Input 
+                  id="amount" 
+                  type="number" 
+                  placeholder="0.00" 
+                  value={selectedClient ? selectedClient.dueAmount : ""}
+                  readOnly={!!selectedClient}
+                />
               </div>
               
               <div className="space-y-2">
@@ -174,7 +215,12 @@ const Transactions = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="paymentFor">Payment For</Label>
-                <Input id="paymentFor" placeholder="Purpose of payment..." />
+                <Input 
+                  id="paymentFor" 
+                  placeholder="Purpose of payment..." 
+                  value={selectedClient ? `Renewal for ${selectedClient.products.join(", ")}` : ""}
+                  readOnly={!!selectedClient}
+                />
               </div>
               
               <div className="space-y-2">

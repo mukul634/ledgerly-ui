@@ -1,7 +1,6 @@
 
-import { Home, FileText, Calendar, RefreshCw, Network, Sun, Moon, FileImage, LogOut } from "lucide-react";
+import { Home, FileText, Calendar, RefreshCw, Network, Sun, Moon, FileImage } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
-import { useAuth } from "@/hooks/useAuth";
 import { 
   Sidebar, 
   SidebarContent, 
@@ -16,7 +15,6 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "react-router-dom";
-import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { path: "/", label: "Clients", icon: Home },
@@ -30,7 +28,6 @@ const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
   const location = useLocation();
   const { state } = useSidebar();
-  const { user, logout } = useAuth();
 
   return (
     <Sidebar variant="sidebar">
@@ -68,16 +65,6 @@ const AppSidebar = () => {
       </SidebarContent>
       
       <SidebarFooter className="flex flex-col gap-2">
-        {user && (
-          <>
-            <div className="px-4 py-2">
-              <p className="text-sm text-muted-foreground">Logged in as</p>
-              <p className="font-medium">{user.username}</p>
-            </div>
-            <Separator />
-          </>
-        )}
-        
         <Button 
           variant="ghost" 
           size="icon" 
@@ -95,16 +82,6 @@ const AppSidebar = () => {
               <span className="text-base">Dark Mode</span>
             </>
           )}
-        </Button>
-        
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={logout} 
-          className="w-full justify-start px-3 py-6 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/50"
-        >
-          <LogOut className="h-6 w-6 mr-3" />
-          <span className="text-base">Logout</span>
         </Button>
       </SidebarFooter>
     </Sidebar>

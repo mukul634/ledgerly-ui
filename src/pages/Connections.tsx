@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,83 +40,113 @@ const cities = [
   "Kathmandu", "Pokhara", "Lalitpur", "Bhaktapur", "Biratnagar", "Birgunj", "Dharan", "Butwal"
 ];
 
-// Mock connections data
-const mockConnections = [
+// Mock client data (this would typically come from a central store or context)
+const mockClients = [
   {
-    id: "CN001",
+    id: "CL001",
     companyName: "Tech Solutions Inc.",
     contactPerson: "John Doe",
     email: "john.doe@techsolutions.com",
     phoneNumber: "123-456-7890",
+    district: "Kathmandu",
     location: "Kathmandu, Nepal",
-    status: "Active",
-    softwareUsage: "Co-operative Software, Tradesoft",
-    software: ["SW001", "SW002"]
+    clientStatus: "Active",
+    dueAmount: 1500.00,
+    products: ["Co-operative Software", "Tradesoft"],
+    softwareIds: ["SW001", "SW002"]
   },
   {
-    id: "CN002",
+    id: "CL002",
     companyName: "Global Enterprises",
     contactPerson: "Emma Wilson",
     email: "emma.wilson@globalent.com",
     phoneNumber: "111-222-3333",
+    district: "Pokhara",
     location: "Pokhara, Nepal",
-    status: "Active",
-    softwareUsage: "Schoolpro",
-    software: ["SW003"]
+    clientStatus: "Active",
+    dueAmount: 1200.00,
+    products: ["Schoolpro"],
+    softwareIds: ["SW003"]
   },
   {
-    id: "CN003",
+    id: "CL003", 
     companyName: "Innovative Systems",
     contactPerson: "Robert Green",
     email: "robert.green@innosys.com",
     phoneNumber: "777-888-9999",
+    district: "Lalitpur",
     location: "Lalitpur, Nepal",
-    status: "Inactive",
-    softwareUsage: "Co-operative Software, Nepalgenetics",
-    software: ["SW001", "SW004"]
+    clientStatus: "Inactive",
+    dueAmount: 950.00,
+    products: ["Co-operative Software", "Nepalgenetics"],
+    softwareIds: ["SW001", "SW004"]
   },
   {
-    id: "CN004",
+    id: "CL004",
     companyName: "Premier Solutions",
     contactPerson: "Alice Cooper",
     email: "alice.cooper@premier.com",
     phoneNumber: "444-333-2222",
+    district: "Kathmandu",
     location: "Kathmandu, Nepal",
-    status: "Active",
-    softwareUsage: "Co-operative Software, Tradesoft, Schoolpro, Nepalgenetics",
-    software: ["SW001", "SW002", "SW003", "SW004"]
+    clientStatus: "Active",
+    dueAmount: 2200.00,
+    products: ["Co-operative Software", "Tradesoft", "Schoolpro", "Nepalgenetics"],
+    softwareIds: ["SW001", "SW002", "SW003", "SW004"]
   },
   {
-    id: "CN005",
+    id: "CL005",
     companyName: "Future Tech Inc.",
     contactPerson: "Daniel Smith",
     email: "daniel.smith@futuretech.com",
     phoneNumber: "999-888-7777",
+    district: "Biratnagar",
     location: "Biratnagar, Nepal",
-    status: "Active",
-    softwareUsage: "Schoolpro, Nepalgenetics",
-    software: ["SW003", "SW004"]
+    clientStatus: "Active",
+    dueAmount: 850.00,
+    products: ["Schoolpro", "Nepalgenetics"],
+    softwareIds: ["SW003", "SW004"]
   },
   {
-    id: "CN006",
+    id: "CL006",
     companyName: "Smart Consulting Group",
     contactPerson: "Jennifer Brown",
     email: "jennifer.brown@smartconsulting.com",
     phoneNumber: "555-666-7777",
+    district: "Pokhara",
     location: "Pokhara, Nepal",
-    status: "Inactive",
-    softwareUsage: "Co-operative Software",
-    software: ["SW001"]
+    clientStatus: "Inactive",
+    dueAmount: 750.00,
+    products: ["Co-operative Software"],
+    softwareIds: ["SW001"]
   }
 ];
+
+// Convert client data into connections data
+const generateConnectionsFromClients = (clients) => {
+  return clients.map(client => ({
+    id: `CN${client.id.slice(2)}`,
+    companyName: client.companyName,
+    contactPerson: client.contactPerson,
+    email: client.email,
+    phoneNumber: client.phoneNumber,
+    location: client.location,
+    status: client.clientStatus,
+    softwareUsage: client.products.join(", "),
+    software: client.softwareIds
+  }));
+};
 
 const Connections = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSoftware, setSelectedSoftware] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  
+  // Generate connections from client data
+  const connections = useMemo(() => generateConnectionsFromClients(mockClients), []);
 
   // Filter connections based on software, city, and search term
-  const filteredConnections = mockConnections.filter((connection) => {
+  const filteredConnections = connections.filter((connection) => {
     // Filter by software if selected
     if (selectedSoftware && !connection.software.includes(selectedSoftware)) {
       return false;
@@ -167,9 +198,18 @@ const Connections = () => {
                   </CardContent>
                   <CardFooter className="justify-between border-t p-4">
                     <p className="text-sm text-muted-foreground">
-                      {mockConnections.filter(conn => conn.software.includes(software.id)).length} users
+                      {connections.filter(conn => conn.software.includes(software.id)).length} users
                     </p>
-                    <Button variant="ghost" size="sm">View All</Button>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedSoftware(software.id);
+                      }}
+                    >
+                      View All
+                    </Button>
                   </CardFooter>
                 </Card>
               ))}
