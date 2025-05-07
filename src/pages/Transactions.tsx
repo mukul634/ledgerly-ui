@@ -12,6 +12,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Simulated data to represent client data that would typically come from a central store or context
 const mockClients = [
@@ -68,7 +75,7 @@ const mockClients = [
     clientStatus: "Pending",
     dueAmount: 850.00,
     address: "202 Cedar St, Metro",
-    products: ["Co-operative Software"]
+    products: ["Co-operative Software", "Tradesoft"]
   }
 ];
 
@@ -76,30 +83,40 @@ const mockClients = [
 const generateTransactionsFromClients = (clients) => {
   const agents = ["Sarah Johnson", "David Clark", "Linda Martinez", "Mark Wilson", "Jessica Adams"];
   
-  return clients.map((client, index) => {
-    const vatRate = 0.13; // 13% VAT
-    const agentIndex = index % agents.length;
-    const renewalAmount = client.dueAmount;
-    const vat = renewalAmount * vatRate;
-    
-    return {
-      id: `TR${String(index + 1).padStart(3, '0')}`,
-      productName: client.products[0],
-      clientId: client.id,
-      clientName: client.companyName,
-      address: client.address,
-      renewalDate: client.renewalDate,
-      renewalAmount: renewalAmount,
-      vat: vat,
-      agentName: agents[agentIndex]
-    };
+  const transactions = [];
+  
+  clients.forEach((client, index) => {
+    // Create a transaction for each product the client has
+    client.products.forEach((productName, productIndex) => {
+      const vatRate = 0.13; // 13% VAT
+      // Distribute the due amount across products if client has multiple
+      const productCount = client.products.length;
+      const renewalAmount = client.dueAmount / productCount;
+      const vat = renewalAmount * vatRate;
+      const agentIndex = (index + productIndex) % agents.length;
+      
+      transactions.push({
+        id: `TR${String(transactions.length + 1).padStart(3, '0')}`,
+        productName: productName,
+        clientId: client.id,
+        clientName: client.companyName,
+        address: client.address,
+        renewalDate: client.renewalDate,
+        renewalAmount: renewalAmount,
+        vat: vat,
+        agentName: agents[agentIndex]
+      });
+    });
   });
+  
+  return transactions;
 };
 
 const Transactions = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState("");
   
   // Generate transactions from client data
   const transactions = useMemo(() => generateTransactionsFromClients(mockClients), []);
@@ -119,6 +136,19 @@ const Transactions = () => {
   );
   
   const selectedClient = mockClients.find(client => client.id === selectedClientId);
+  
+  // Get available products for the selected client
+  const availableProducts = selectedClient ? selectedClient.products : [];
+  
+  // Calculate amount based on selected product
+  const calculateAmount = () => {
+    if (!selectedClient) return 0;
+    
+    if (!selectedProduct) return selectedClient.dueAmount;
+    
+    // If a specific product is selected, divide the due amount by the number of products
+    return selectedClient.dueAmount / selectedClient.products.length;
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -159,7 +189,10 @@ const Transactions = () => {
                   id="clientSelect" 
                   className="w-full p-2 border rounded-md bg-background"
                   value={selectedClientId}
-                  onChange={(e) => setSelectedClientId(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedClientId(e.target.value);
+                    setSelectedProduct(""); // Reset selected product when client changes
+                  }}
                 >
                   <option value="">Select a client...</option>
                   {mockClients.map(client => (
@@ -168,6 +201,30 @@ const Transactions = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="productSelect">Select Product</Label>
+                <Select 
+                  value={selectedProduct} 
+                  onValueChange={setSelectedProduct}
+                  disabled={!selectedClientId}
+                >
+                  <SelectTrigger id="productSelect">
+                    <SelectValue placeholder="Select product..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableProducts.length > 0 ? (
+                      availableProducts.map(product => (
+                        <SelectItem key={product} value={product}>
+                          {product}
+                        </SelectItem>
+                      ))
+                    ) : (
+                      <SelectItem value="none" disabled>No products available</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="space-y-2">
@@ -203,7 +260,7 @@ const Transactions = () => {
                   id="amount" 
                   type="number" 
                   placeholder="0.00" 
-                  value={selectedClient ? selectedClient.dueAmount : ""}
+                  value={calculateAmount()}
                   readOnly={!!selectedClient}
                 />
               </div>
@@ -218,7 +275,10 @@ const Transactions = () => {
                 <Input 
                   id="paymentFor" 
                   placeholder="Purpose of payment..." 
-                  value={selectedClient ? `Renewal for ${selectedClient.products.join(", ")}` : ""}
+                  value={selectedClient ? 
+                    `Renewal for ${selectedProduct || selectedClient.products.join(", ")}` : 
+                    ""
+                  }
                   readOnly={!!selectedClient}
                 />
               </div>
