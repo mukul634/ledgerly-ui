@@ -1,6 +1,4 @@
-
-import { useState, useEffect, createContext, useContext } from "react";
-import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useState, useEffect } from "react";
 
 interface User {
   username: string;
@@ -22,9 +20,11 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const navigate = useNavigate();
+  // Set default user to be automatically logged in
+  const defaultUser = { username: "admin", role: "admin" };
+  const [user, setUser] = useState<User | null>(defaultUser);
 
+  // No need to check localStorage anymore since we're always authenticated
   useEffect(() => {
     // Check if user is logged in on page load
     const storedUser = localStorage.getItem("finledger_user");
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       }
     }
   }, []);
-
+  
   const login = (username: string, role: string) => {
     const userData = { username, role };
     localStorage.setItem("finledger_user", JSON.stringify(userData));
@@ -45,16 +45,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = () => {
+    // We're keeping the logout functionality in case it's needed in the future
     localStorage.removeItem("finledger_user");
-    setUser(null);
-    navigate("/login");
+    setUser(defaultUser); // Reset to default user instead of null
   };
 
   const value = {
     user,
     login,
     logout,
-    isAuthenticated: !!user,
+    isAuthenticated: true, // Always authenticated
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
