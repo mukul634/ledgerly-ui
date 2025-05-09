@@ -8,6 +8,12 @@ interface ClientDetailProps {
 }
 
 const ClientDetail = ({ client }: ClientDetailProps) => {
+  // Helper function to display values safely
+  const displayValue = (value: any) => {
+    if (value === undefined || value === null) return 'N/A';
+    return value;
+  };
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -25,27 +31,27 @@ const ClientDetail = ({ client }: ClientDetailProps) => {
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Address</p>
-                <p className="font-medium">{client.address}</p>
+                <p className="font-medium">{displayValue(client.address)}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">District</p>
-                <p className="font-medium">{client.district}</p>
+                <p className="font-medium">{displayValue(client.district)}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Phone No</p>
-                <p className="font-medium">{client.phoneNo}</p>
+                <p className="font-medium">{displayValue(client.phoneNo)}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Mobile No</p>
-                <p className="font-medium">{client.mobileNo}</p>
+                <p className="font-medium">{displayValue(client.mobileNo)}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">PAN No</p>
-                <p className="font-medium">{client.panNo}</p>
+                <p className="font-medium">{displayValue(client.panNo)}</p>
               </div>
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Status</p>
-                <p className="font-medium">{client.clientStatus}</p>
+                <p className="font-medium">{displayValue(client.clientStatus)}</p>
               </div>
             </div>
           </CardContent>
@@ -57,17 +63,19 @@ const ClientDetail = ({ client }: ClientDetailProps) => {
             <div className="space-y-4">
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Due Amount</p>
-                <p className="text-xl font-bold">₹{client.dueAmount.toFixed(2)}</p>
+                <p className="text-xl font-bold">
+                  ₹{client.dueAmount ? client.dueAmount.toFixed(2) : '0.00'}
+                </p>
               </div>
               
               <div className="space-y-1">
                 <p className="text-sm text-muted-foreground">Renewal Date</p>
-                <p className="font-medium">{client.renewalDate}</p>
+                <p className="font-medium">{displayValue(client.renewalDate)}</p>
               </div>
               
               <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">SMS Rate</p>
-                <p className="font-medium">₹{client.smsRate.toFixed(2)}</p>
+                <p className="text-sm text-muted-foreground">Products Used</p>
+                <p className="font-medium">{displayValue(client.productsUsed)}</p>
               </div>
 
               {client.dueAmount > 0 && (
@@ -87,31 +95,27 @@ const ClientDetail = ({ client }: ClientDetailProps) => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Contact Person</p>
-              <p className="font-medium">{client.fullName}</p>
+              <p className="font-medium">{displayValue(client.fullName)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Representative</p>
-              <p className="font-medium">{client.representative}</p>
+              <p className="font-medium">{displayValue(client.representative)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Agent Name</p>
-              <p className="font-medium">{client.agentName}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm text-muted-foreground">Products Used</p>
-              <p className="font-medium">{client.productsUsed}</p>
+              <p className="font-medium">{displayValue(client.agentName)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Install Date</p>
-              <p className="font-medium">{client.installDate}</p>
+              <p className="font-medium">{displayValue(client.installDate)}</p>
             </div>
             <div className="space-y-1">
               <p className="text-sm text-muted-foreground">Start Date</p>
-              <p className="font-medium">{client.startDate}</p>
+              <p className="font-medium">{displayValue(client.startDate)}</p>
             </div>
             <div className="md:col-span-3 space-y-1">
               <p className="text-sm text-muted-foreground">Remarks</p>
-              <p className="font-medium">{client.remarks}</p>
+              <p className="font-medium">{displayValue(client.remarks)}</p>
             </div>
           </div>
         </CardContent>

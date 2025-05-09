@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -54,7 +55,8 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
   };
   
   const handleAddClient = (newClient: any) => {
-    setClients([...clients, newClient]);
+    const updatedClients = [...clients, newClient];
+    setClients(updatedClients);
     toast.success("Client added successfully");
     setIsAddClientOpen(false);
   };
@@ -72,6 +74,14 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
           />
         </div>
         <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            className="ml-auto"
+            onClick={() => setIsAddClientOpen(true)}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Client
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">

@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,93 +20,38 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Simulated data to represent client data that would typically come from a central store or context
-const mockClients = [
-  {
-    id: "CL001",
-    companyName: "Tech Solutions Inc.",
-    district: "Kathmandu",
-    phoneNo: "123-456-7890",
-    renewalDate: "2023-10-15",
-    clientStatus: "Active",
-    dueAmount: 1500.00,
-    address: "123 Main St, City",
-    products: ["Co-operative Software"]
-  },
-  {
-    id: "CL002",
-    companyName: "Global Enterprises",
-    district: "Pokhara",
-    phoneNo: "111-222-3333",
-    renewalDate: "2023-11-20",
-    clientStatus: "Active",
-    dueAmount: 1200.00,
-    address: "456 Oak St, Town",
-    products: ["Tradesoft"]
-  },
-  {
-    id: "CL003",
-    companyName: "Innovative Systems",
-    district: "Lalitpur",
-    phoneNo: "777-888-9999",
-    renewalDate: "2023-09-05",
-    clientStatus: "Active",
-    dueAmount: 950.00,
-    address: "789 Pine St, Village",
-    products: ["Schoolpro"]
-  },
-  {
-    id: "CL004",
-    companyName: "Premier Solutions",
-    district: "Kathmandu",
-    phoneNo: "444-333-2222",
-    renewalDate: "2023-12-10",
-    clientStatus: "Active",
-    dueAmount: 2200.00,
-    address: "101 Maple St, County",
-    products: ["Nepalgenetics"]
-  },
-  {
-    id: "CL005",
-    companyName: "Future Tech Inc.",
-    district: "Biratnagar",
-    phoneNo: "555-666-7777",
-    renewalDate: "2023-08-25",
-    clientStatus: "Pending",
-    dueAmount: 850.00,
-    address: "202 Cedar St, Metro",
-    products: ["Co-operative Software", "Tradesoft"]
-  }
-];
-
 // Generate transactions based on client data
 const generateTransactionsFromClients = (clients) => {
+  if (!clients || clients.length === 0) return [];
+  
   const agents = ["Sarah Johnson", "David Clark", "Linda Martinez", "Mark Wilson", "Jessica Adams"];
   
   const transactions = [];
   
   clients.forEach((client, index) => {
-    // Create a transaction for each product the client has
-    client.products.forEach((productName, productIndex) => {
-      const vatRate = 0.13; // 13% VAT
-      // Distribute the due amount across products if client has multiple
-      const productCount = client.products.length;
-      const renewalAmount = client.dueAmount / productCount;
-      const vat = renewalAmount * vatRate;
-      const agentIndex = (index + productIndex) % agents.length;
+    // Only create transactions for clients with products
+    if (client.productsUsed) {
+      const products = [client.productsUsed]; // Make it an array to work with the forEach
       
-      transactions.push({
-        id: `TR${String(transactions.length + 1).padStart(3, '0')}`,
-        productName: productName,
-        clientId: client.id,
-        clientName: client.companyName,
-        address: client.address,
-        renewalDate: client.renewalDate,
-        renewalAmount: renewalAmount,
-        vat: vat,
-        agentName: agents[agentIndex]
+      products.forEach((productName, productIndex) => {
+        const vatRate = 0.13; // 13% VAT
+        const renewalAmount = client.dueAmount || 0;
+        const vat = renewalAmount * vatRate;
+        const agentIndex = (index + productIndex) % agents.length;
+        
+        transactions.push({
+          id: `TR${String(transactions.length + 1).padStart(3, '0')}`,
+          productName: productName,
+          clientId: client.id,
+          clientName: client.companyName,
+          address: client.address || 'N/A',
+          renewalDate: client.renewalDate || 'N/A',
+          renewalAmount: renewalAmount,
+          vat: vat,
+          agentName: agents[agentIndex]
+        });
       });
-    });
+    }
   });
   
   return transactions;
@@ -117,9 +62,24 @@ const Transactions = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
+  const [clients, setClients] = useState([]);
+  const [transactions, setTransactions] = useState([]);
   
-  // Generate transactions from client data
-  const transactions = useMemo(() => generateTransactionsFromClients(mockClients), []);
+  // Load clients from localStorage on component mount
+  useEffect(() => {
+    const storedClients = localStorage.getItem('clients');
+    if (storedClients) {
+      setClients(JSON.parse(storedClients));
+    }
+  }, []);
+
+  // Update transactions when clients change
+  useEffect(() => {
+    if (clients.length > 0) {
+      const generatedTransactions = generateTransactionsFromClients(clients);
+      setTransactions(generatedTransactions);
+    }
+  }, [clients]);
   
   // Generate a new transaction ID
   const generateTransactionId = () => {
@@ -131,29 +91,64 @@ const Transactions = () => {
   const newRecordNo = `REC${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
   const filteredTransactions = transactions.filter((transaction) => 
-    transaction.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.clientId.toLowerCase().includes(searchTerm.toLowerCase())
+    (transaction.clientName && transaction.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (transaction.clientId && transaction.clientId.toLowerCase().includes(searchTerm.toLowerCase()))
   );
   
-  const selectedClient = mockClients.find(client => client.id === selectedClientId);
+  const selectedClient = clients.find(client => client.id === selectedClientId);
   
   // Get available products for the selected client
-  const availableProducts = selectedClient ? selectedClient.products : [];
+  const availableProducts = selectedClient ? [selectedClient.productsUsed].filter(Boolean) : [];
   
   // Calculate amount based on selected product
   const calculateAmount = () => {
     if (!selectedClient) return 0;
-    
-    if (!selectedProduct) return selectedClient.dueAmount;
-    
-    // If a specific product is selected, divide the due amount by the number of products
-    return selectedClient.dueAmount / selectedClient.products.length;
+    return selectedClient.dueAmount || 0;
   };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!selectedClientId) {
+      toast.error("Please select a client");
+      return;
+    }
+    
+    if (!selectedProduct) {
+      toast.error("Please select a product");
+      return;
+    }
+    
+    const client = clients.find(c => c.id === selectedClientId);
+    
+    if (!client) {
+      toast.error("Invalid client selected");
+      return;
+    }
+    
+    const vatRate = 0.13;
+    const amount = calculateAmount();
+    const vat = amount * vatRate;
+    
+    const newTransaction = {
+      id: newTransactionId,
+      productName: selectedProduct,
+      clientId: client.id,
+      clientName: client.companyName,
+      address: client.address || 'N/A',
+      renewalDate: client.renewalDate || 'N/A', 
+      renewalAmount: amount,
+      vat: vat,
+      agentName: "Agent", // Could be selected or assigned
+      date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
+    };
+    
+    setTransactions([...transactions, newTransaction]);
     toast.success("Transaction created successfully");
-    // Additional logic for creating transaction would go here
+    
+    // Reset form
+    setSelectedClientId("");
+    setSelectedProduct("");
   };
 
   return (
@@ -195,12 +190,17 @@ const Transactions = () => {
                   }}
                 >
                   <option value="">Select a client...</option>
-                  {mockClients.map(client => (
+                  {clients.map(client => (
                     <option key={client.id} value={client.id}>
                       {client.id} - {client.companyName}
                     </option>
                   ))}
                 </select>
+                {clients.length === 0 && (
+                  <p className="text-sm text-orange-500 mt-1">
+                    No clients added yet. Please add clients from the Clients page first.
+                  </p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -208,7 +208,7 @@ const Transactions = () => {
                 <Select 
                   value={selectedProduct} 
                   onValueChange={setSelectedProduct}
-                  disabled={!selectedClientId}
+                  disabled={!selectedClientId || availableProducts.length === 0}
                 >
                   <SelectTrigger id="productSelect">
                     <SelectValue placeholder="Select product..." />
@@ -275,11 +275,11 @@ const Transactions = () => {
                 <Input 
                   id="paymentFor" 
                   placeholder="Purpose of payment..." 
-                  value={selectedClient ? 
-                    `Renewal for ${selectedProduct || selectedClient.products.join(", ")}` : 
+                  value={selectedClient && selectedProduct ? 
+                    `Renewal for ${selectedProduct}` : 
                     ""
                   }
-                  readOnly={!!selectedClient}
+                  readOnly={!!(selectedClient && selectedProduct)}
                 />
               </div>
               
@@ -295,7 +295,12 @@ const Transactions = () => {
               </div>
               
               <div className="md:col-span-3 flex justify-end">
-                <Button type="submit">Create New Transaction</Button>
+                <Button 
+                  type="submit"
+                  disabled={!selectedClientId || !selectedProduct}
+                >
+                  Create New Transaction
+                </Button>
               </div>
             </form>
           </CardContent>
@@ -334,22 +339,37 @@ const Transactions = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTransactions.map((transaction) => (
-                  <TableRow 
-                    key={transaction.id} 
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <TableCell>{transaction.productName}</TableCell>
-                    <TableCell>{transaction.clientId}</TableCell>
-                    <TableCell>{transaction.clientName}</TableCell>
-                    <TableCell>{transaction.address}</TableCell>
-                    <TableCell>{transaction.renewalDate}</TableCell>
-                    <TableCell>Rs. {transaction.renewalAmount.toFixed(2)}</TableCell>
-                    <TableCell>Rs. {transaction.vat.toFixed(2)}</TableCell>
-                    <TableCell>Rs. {(transaction.renewalAmount + transaction.vat).toFixed(2)}</TableCell>
-                    <TableCell>{transaction.agentName}</TableCell>
+                {filteredTransactions.length > 0 ? (
+                  filteredTransactions.map((transaction) => (
+                    <TableRow 
+                      key={transaction.id} 
+                      className="hover:bg-muted/50 transition-colors"
+                    >
+                      <TableCell>{transaction.productName}</TableCell>
+                      <TableCell>{transaction.clientId}</TableCell>
+                      <TableCell>{transaction.clientName}</TableCell>
+                      <TableCell>{transaction.address}</TableCell>
+                      <TableCell>{transaction.renewalDate}</TableCell>
+                      <TableCell>Rs. {transaction.renewalAmount.toFixed(2)}</TableCell>
+                      <TableCell>Rs. {transaction.vat.toFixed(2)}</TableCell>
+                      <TableCell>Rs. {(transaction.renewalAmount + transaction.vat).toFixed(2)}</TableCell>
+                      <TableCell>{transaction.agentName}</TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={9} className="h-24 text-center">
+                      {clients.length === 0 ? (
+                        <div className="flex flex-col items-center">
+                          <p className="mb-2">No clients added yet.</p>
+                          <p className="text-sm text-muted-foreground">Add clients first to create transactions.</p>
+                        </div>
+                      ) : (
+                        <div>No transactions found.</div>
+                      )}
+                    </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </div>
@@ -360,3 +380,4 @@ const Transactions = () => {
 };
 
 export default Transactions;
+

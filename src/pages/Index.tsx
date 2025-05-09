@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import ClientsTable from "@/components/clients/ClientsTable";
 import AddClientForm from "@/components/clients/AddClientForm";
@@ -15,6 +16,19 @@ const Index = () => {
   const [showingRenewalDetails, setShowingRenewalDetails] = useState(false);
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
   const [clients, setClients] = useState([]);
+  
+  // Load clients from localStorage on component mount
+  useEffect(() => {
+    const storedClients = localStorage.getItem('clients');
+    if (storedClients) {
+      setClients(JSON.parse(storedClients));
+    }
+  }, []);
+  
+  // Save clients to localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('clients', JSON.stringify(clients));
+  }, [clients]);
   
   // Calculate total clients
   const totalClients = clients.length;
