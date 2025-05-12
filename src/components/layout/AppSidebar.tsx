@@ -34,7 +34,7 @@ const AppSidebar = () => {
       <SidebarHeader className="flex flex-col items-center justify-center px-4 py-6">
         <div className="flex flex-col items-center gap-2">
           <div className="flex h-16 w-16 items-center justify-center">
-            <img src="/lovable-uploads/97c337c7-8014-4513-a4bb-4e54cb817df9.png" alt="FinLedger Logo" className="h-16 w-16" />
+            <img src="/lovable-uploads/e3a7197e-d537-47a6-9725-ccb9f37fac02.png" alt="FinLedger Logo" className="h-16 w-16" />
           </div>
           <span className="text-2xl font-bold text-finblue-800 dark:text-white text-center">FinLedger</span>
         </div>

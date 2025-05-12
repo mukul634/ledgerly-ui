@@ -34,7 +34,7 @@ const MainLayoutContent = ({ children }: { children: React.ReactNode }) => {
             className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity"
             onClick={handleLogoClick}
           >
-            <img src="/lovable-uploads/97c337c7-8014-4513-a4bb-4e54cb817df9.png" alt="FinLedger Logo" className="h-8 w-8" />
+            <img src="/lovable-uploads/e3a7197e-d537-47a6-9725-ccb9f37fac02.png" alt="FinLedger Logo" className="h-8 w-8" />
             <h1 className="text-xl font-medium">FinLedger</h1>
           </div>
         </div>
