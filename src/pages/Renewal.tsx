@@ -1,95 +1,49 @@
 
-import { useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Bell, RefreshCw, AlertCircle } from "lucide-react";
-
-// Mock client data (this would typically come from a central store or context)
-const mockClients = [
-  {
-    id: "CL001",
-    companyName: "Tech Solutions Inc.",
-    district: "Kathmandu",
-    phoneNo: "123-456-7890",
-    renewalDate: "2023-09-25",
-    clientStatus: "Active",
-    dueAmount: 1500.00,
-    address: "123 Main St, City",
-    products: ["Co-operative Software"]
-  },
-  {
-    id: "CL002",
-    companyName: "Global Enterprises",
-    district: "Pokhara",
-    phoneNo: "111-222-3333",
-    renewalDate: "2023-10-10",
-    clientStatus: "Active",
-    dueAmount: 1200.00,
-    address: "456 Oak St, Town",
-    products: ["Tradesoft"]
-  },
-  {
-    id: "CL003",
-    companyName: "Innovative Systems",
-    district: "Lalitpur",
-    phoneNo: "777-888-9999",
-    renewalDate: "2023-09-20",
-    clientStatus: "Active",
-    dueAmount: 950.00,
-    address: "789 Pine St, Village",
-    products: ["Schoolpro"]
-  },
-  {
-    id: "CL004",
-    companyName: "Premier Solutions",
-    district: "Kathmandu",
-    phoneNo: "444-333-2222",
-    renewalDate: "2023-10-15",
-    clientStatus: "Active",
-    dueAmount: 2200.00,
-    address: "101 Maple St, County",
-    products: ["Nepalgenetics"]
-  },
-  {
-    id: "CL005",
-    companyName: "Future Tech Inc.",
-    district: "Biratnagar",
-    phoneNo: "555-666-7777",
-    renewalDate: "2023-09-22",
-    clientStatus: "Pending",
-    dueAmount: 850.00,
-    address: "202 Cedar St, Metro",
-    products: ["Co-operative Software"]
-  }
-];
-
-// Generate renewals from client data
-const generateRenewals = (clients) => {
-  const agents = ["Sarah Johnson", "David Clark", "Linda Martinez", "Mark Wilson", "Jessica Adams"];
-  const today = new Date();
-  
-  return clients.map((client, index) => {
-    const renewalDate = new Date(client.renewalDate);
-    const daysLeft = Math.floor((renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    const agentIndex = index % agents.length;
-    
-    return {
-      id: `RN${String(index + 1).padStart(3, '0')}`,
-      clientName: client.companyName,
-      clientId: client.id,
-      renewalDate: client.renewalDate,
-      renewalAmount: client.dueAmount,
-      agentName: agents[agentIndex],
-      daysLeft: daysLeft
-    };
-  });
-};
+import { format, addDays } from "date-fns";
 
 const Renewal = () => {
-  // Generate renewals based on client data
-  const renewals = useMemo(() => generateRenewals(mockClients), []);
+  const [clients, setClients] = useState([]);
+  
+  // Load clients from localStorage on component mount
+  useEffect(() => {
+    const storedClients = localStorage.getItem('clients');
+    if (storedClients) {
+      setClients(JSON.parse(storedClients));
+    }
+  }, []);
+  
+  // Generate renewals from actual client data
+  const generateRenewals = (clients) => {
+    if (!clients.length) return [];
+    
+    const agents = ["Sarah Johnson", "David Clark", "Linda Martinez", "Mark Wilson", "Jessica Adams"];
+    const today = new Date();
+    
+    return clients.map((client, index) => {
+      const renewalDate = new Date(client.renewalDate);
+      const daysLeft = Math.floor((renewalDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      const agentIndex = index % agents.length;
+      
+      return {
+        id: `RN${String(index + 1).padStart(3, '0')}`,
+        clientName: client.companyName,
+        clientId: client.id,
+        renewalDate: client.renewalDate,
+        renewalAmount: client.dueAmount || 0,
+        agentName: agents[agentIndex],
+        daysLeft: daysLeft
+      };
+    });
+  };
+  
+  // Calculate renewals based on real client data
+  const renewals = useMemo(() => generateRenewals(clients), [clients]);
   
   const urgentRenewals = renewals.filter(renewal => renewal.daysLeft <= 7);
   const upcomingRenewals = renewals.filter(renewal => renewal.daysLeft > 7 && renewal.daysLeft <= 30);
@@ -138,7 +92,7 @@ const Renewal = () => {
                       <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
                         <div>
                           <p className="text-muted-foreground">Renewal Date</p>
-                          <p>{renewal.renewalDate}</p>
+                          <p>{format(new Date(renewal.renewalDate), 'PP')}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Amount</p>
@@ -191,7 +145,7 @@ const Renewal = () => {
                       <div className="mt-2 grid grid-cols-3 gap-2 text-sm">
                         <div>
                           <p className="text-muted-foreground">Renewal Date</p>
-                          <p>{renewal.renewalDate}</p>
+                          <p>{format(new Date(renewal.renewalDate), 'PP')}</p>
                         </div>
                         <div>
                           <p className="text-muted-foreground">Amount</p>
@@ -228,39 +182,48 @@ const Renewal = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {renewals.map((renewal) => (
-                  <TableRow 
-                    key={renewal.id} 
-                    className="hover:bg-muted/50 transition-colors"
-                  >
-                    <TableCell>{renewal.clientName}</TableCell>
-                    <TableCell>{renewal.clientId}</TableCell>
-                    <TableCell>{renewal.renewalDate}</TableCell>
-                    <TableCell>Rs.{renewal.renewalAmount.toFixed(2)}</TableCell>
-                    <TableCell>{renewal.agentName}</TableCell>
-                    <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs ${
-                        renewal.daysLeft <= 7 
-                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                          : renewal.daysLeft <= 30
-                            ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                            : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                      }`}>
-                        {renewal.daysLeft <= 7 
-                          ? 'Urgent' 
-                          : renewal.daysLeft <= 30 
-                            ? 'Upcoming'
-                            : 'On Track'}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <Button size="sm" variant="ghost" className="flex items-center">
-                        <Bell className="mr-2 h-4 w-4" />
-                        Send Reminder
-                      </Button>
+                {renewals.length > 0 ? (
+                  renewals.map((renewal) => (
+                    <TableRow 
+                      key={renewal.id} 
+                      className="hover:bg-muted/50 transition-colors"
+                    >
+                      <TableCell>{renewal.clientName}</TableCell>
+                      <TableCell>{renewal.clientId}</TableCell>
+                      <TableCell>{format(new Date(renewal.renewalDate), 'PP')}</TableCell>
+                      <TableCell>Rs.{renewal.renewalAmount.toFixed(2)}</TableCell>
+                      <TableCell>{renewal.agentName}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          renewal.daysLeft <= 7 
+                            ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                            : renewal.daysLeft <= 30
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        }`}>
+                          {renewal.daysLeft <= 7 
+                            ? 'Urgent' 
+                            : renewal.daysLeft <= 30 
+                              ? 'Upcoming'
+                              : 'On Track'}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <Button size="sm" variant="ghost" className="flex items-center">
+                          <Bell className="mr-2 h-4 w-4" />
+                          Send Reminder
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center">
+                      <p>No clients with renewal dates found.</p>
+                      <p className="text-sm text-muted-foreground mt-2">Add clients with renewal dates to see them here.</p>
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>

@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,110 +40,58 @@ const cities = [
   "Kathmandu", "Pokhara", "Lalitpur", "Bhaktapur", "Biratnagar", "Birgunj", "Dharan", "Butwal"
 ];
 
-// Mock client data (this would typically come from a central store or context)
-const mockClients = [
-  {
-    id: "CL001",
-    companyName: "Tech Solutions Inc.",
-    contactPerson: "John Doe",
-    email: "john.doe@techsolutions.com",
-    phoneNumber: "123-456-7890",
-    district: "Kathmandu",
-    location: "Kathmandu, Nepal",
-    clientStatus: "Active",
-    dueAmount: 1500.00,
-    products: ["Co-operative Software", "Tradesoft"],
-    softwareIds: ["SW001", "SW002"]
-  },
-  {
-    id: "CL002",
-    companyName: "Global Enterprises",
-    contactPerson: "Emma Wilson",
-    email: "emma.wilson@globalent.com",
-    phoneNumber: "111-222-3333",
-    district: "Pokhara",
-    location: "Pokhara, Nepal",
-    clientStatus: "Active",
-    dueAmount: 1200.00,
-    products: ["Schoolpro"],
-    softwareIds: ["SW003"]
-  },
-  {
-    id: "CL003", 
-    companyName: "Innovative Systems",
-    contactPerson: "Robert Green",
-    email: "robert.green@innosys.com",
-    phoneNumber: "777-888-9999",
-    district: "Lalitpur",
-    location: "Lalitpur, Nepal",
-    clientStatus: "Inactive",
-    dueAmount: 950.00,
-    products: ["Co-operative Software", "Nepalgenetics"],
-    softwareIds: ["SW001", "SW004"]
-  },
-  {
-    id: "CL004",
-    companyName: "Premier Solutions",
-    contactPerson: "Alice Cooper",
-    email: "alice.cooper@premier.com",
-    phoneNumber: "444-333-2222",
-    district: "Kathmandu",
-    location: "Kathmandu, Nepal",
-    clientStatus: "Active",
-    dueAmount: 2200.00,
-    products: ["Co-operative Software", "Tradesoft", "Schoolpro", "Nepalgenetics"],
-    softwareIds: ["SW001", "SW002", "SW003", "SW004"]
-  },
-  {
-    id: "CL005",
-    companyName: "Future Tech Inc.",
-    contactPerson: "Daniel Smith",
-    email: "daniel.smith@futuretech.com",
-    phoneNumber: "999-888-7777",
-    district: "Biratnagar",
-    location: "Biratnagar, Nepal",
-    clientStatus: "Active",
-    dueAmount: 850.00,
-    products: ["Schoolpro", "Nepalgenetics"],
-    softwareIds: ["SW003", "SW004"]
-  },
-  {
-    id: "CL006",
-    companyName: "Smart Consulting Group",
-    contactPerson: "Jennifer Brown",
-    email: "jennifer.brown@smartconsulting.com",
-    phoneNumber: "555-666-7777",
-    district: "Pokhara",
-    location: "Pokhara, Nepal",
-    clientStatus: "Inactive",
-    dueAmount: 750.00,
-    products: ["Co-operative Software"],
-    softwareIds: ["SW001"]
-  }
-];
-
 // Convert client data into connections data
 const generateConnectionsFromClients = (clients) => {
-  return clients.map(client => ({
-    id: `CN${client.id.slice(2)}`,
-    companyName: client.companyName,
-    contactPerson: client.contactPerson,
-    email: client.email,
-    phoneNumber: client.phoneNumber,
-    location: client.location,
-    status: client.clientStatus,
-    softwareUsage: client.products.join(", "),
-    software: client.softwareIds
-  }));
+  // Make sure clients is an array before mapping
+  if (!Array.isArray(clients) || clients.length === 0) return [];
+  
+  return clients.map(client => {
+    // Handle the products field, which might be a string or not exist
+    let productsList = [];
+    if (client.productsUsed) {
+      if (typeof client.productsUsed === 'string') {
+        productsList = [client.productsUsed];
+      } else if (Array.isArray(client.productsUsed)) {
+        productsList = client.productsUsed;
+      }
+    }
+    
+    // Map product names to software IDs
+    const softwareIds = productsList.map(product => {
+      const software = softwareProducts.find(sw => sw.name === product);
+      return software ? software.id : null;
+    }).filter(Boolean); // Remove null values
+    
+    return {
+      id: `CN${client.id ? client.id.slice(2) : Math.random().toString(36).substring(2, 6)}`,
+      companyName: client.companyName || 'Unknown',
+      contactPerson: client.fullName || client.contactPerson || 'Unknown',
+      email: client.email || `contact@${client.companyName?.toLowerCase().replace(/\s/g, '')}.com` || 'unknown@example.com',
+      phoneNumber: client.phoneNo || client.mobileNo || 'N/A',
+      location: `${client.district || 'Unknown'}, Nepal`,
+      status: client.clientStatus || 'Unknown',
+      softwareUsage: productsList.join(", ") || 'None',
+      software: softwareIds
+    };
+  });
 };
 
 const Connections = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSoftware, setSelectedSoftware] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
+  const [clients, setClients] = useState([]);
+  
+  // Load clients from localStorage on component mount
+  useEffect(() => {
+    const storedClients = localStorage.getItem('clients');
+    if (storedClients) {
+      setClients(JSON.parse(storedClients));
+    }
+  }, []);
   
   // Generate connections from client data
-  const connections = useMemo(() => generateConnectionsFromClients(mockClients), []);
+  const connections = useMemo(() => generateConnectionsFromClients(clients), [clients]);
 
   // Filter connections based on software, city, and search term
   const filteredConnections = connections.filter((connection) => {
