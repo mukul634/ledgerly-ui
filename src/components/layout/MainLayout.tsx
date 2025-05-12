@@ -30,12 +30,13 @@ const MainLayoutContent = ({ children }: { children: React.ReactNode }) => {
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 
-            className="text-xl font-medium cursor-pointer hover:text-finblue-600 transition-colors"
+          <div 
+            className="flex items-center gap-2 cursor-pointer hover:opacity-90 transition-opacity"
             onClick={handleLogoClick}
           >
-            FinLedger
-          </h1>
+            <img src="/lovable-uploads/97c337c7-8014-4513-a4bb-4e54cb817df9.png" alt="FinLedger Logo" className="h-8 w-8" />
+            <h1 className="text-xl font-medium">FinLedger</h1>
+          </div>
         </div>
         <div className="p-4 md:p-6">{children}</div>
       </div>

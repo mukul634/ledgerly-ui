@@ -1,5 +1,5 @@
 
-import { Home, FileText, Calendar, RefreshCw, Network, Sun, Moon, FileImage } from "lucide-react";
+import { Home, FileText, Calendar, RefreshCw, Network, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { 
   Sidebar, 
@@ -33,8 +33,8 @@ const AppSidebar = () => {
     <Sidebar variant="sidebar">
       <SidebarHeader className="flex flex-col items-center justify-center px-4 py-6">
         <div className="flex flex-col items-center gap-2">
-          <div className="flex h-14 w-14 items-center justify-center rounded-md bg-finblue-800 text-white">
-            <FileImage className="h-8 w-8" />
+          <div className="flex h-16 w-16 items-center justify-center">
+            <img src="/lovable-uploads/97c337c7-8014-4513-a4bb-4e54cb817df9.png" alt="FinLedger Logo" className="h-16 w-16" />
           </div>
           <span className="text-2xl font-bold text-finblue-800 dark:text-white text-center">FinLedger</span>
         </div>
