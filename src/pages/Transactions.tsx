@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useNumberInput } from "@/lib/hooks";
+import { useNumberInput } from "@/hooks/useNumberInput";
 
 // Generate transactions based on client data
 const generateTransactionsFromClients = (clients) => {
