@@ -1,3 +1,4 @@
+
 import { useState, useMemo, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +63,11 @@ const Transactions = () => {
   const [clients, setClients] = useState([]);
   const [transactions, setTransactions] = useState([]);
   
+  // Store the record number in state to prevent it from changing on re-renders
+  const [newRecordNo, setNewRecordNo] = useState<string>("");
+  // Store the transaction ID in state as well for consistency
+  const [newTransactionId, setNewTransactionId] = useState<string>("");
+  
   // Load clients from localStorage on component mount
   useEffect(() => {
     const storedClients = localStorage.getItem('clients');
@@ -78,14 +84,26 @@ const Transactions = () => {
     }
   }, [clients]);
   
+  // Initialize transaction ID and record number once on component mount
+  useEffect(() => {
+    generateNewTransactionId();
+    generateNewRecordNo();
+  }, []);
+  
   // Generate a new transaction ID
   const generateTransactionId = () => {
     return `TR${String(transactions.length + 1).padStart(3, '0')}`;
   };
   
-  // Auto-generated values
-  const newTransactionId = generateTransactionId();
-  const newRecordNo = `REC${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
+  // Update the transaction ID
+  const generateNewTransactionId = () => {
+    setNewTransactionId(generateTransactionId());
+  };
+  
+  // Generate a new record number
+  const generateNewRecordNo = () => {
+    setNewRecordNo(`REC${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`);
+  };
 
   const { handleNumberInput } = useNumberInput();
 
@@ -162,6 +180,10 @@ const Transactions = () => {
     // Reset form
     setSelectedClientId("");
     setSelectedProduct("");
+    
+    // Generate new transaction ID and record number for the next transaction
+    generateNewTransactionId();
+    generateNewRecordNo();
   };
 
   return (
