@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useNumberInput } from "@/lib/hooks";
 
 // Generate transactions based on client data
 const generateTransactionsFromClients = (clients) => {
@@ -87,6 +87,8 @@ const Transactions = () => {
   const newTransactionId = generateTransactionId();
   const newRecordNo = `REC${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`;
 
+  const { handleNumberInput } = useNumberInput();
+
   const filteredTransactions = transactions.filter((transaction) => 
     (transaction.clientName && transaction.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (transaction.clientId && transaction.clientId.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -101,6 +103,23 @@ const Transactions = () => {
   const calculateAmount = () => {
     if (!selectedClient) return 0;
     return selectedClient.dueAmount || 0;
+  };
+  
+  const [manualAmount, setManualAmount] = useState<number>(0);
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (handleNumberInput(e)) {
+      const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
+      setManualAmount(value);
+    }
+  };
+
+  const handleIncrementAmount = () => {
+    setManualAmount(prev => prev + 100);
+  };
+
+  const handleDecrementAmount = () => {
+    setManualAmount(prev => Math.max(0, prev - 100));
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -252,9 +271,13 @@ const Transactions = () => {
                 <Label htmlFor="amount">Amount</Label>
                 <Input 
                   id="amount" 
-                  type="number" 
+                  type="text" 
                   placeholder="0.00" 
-                  value={calculateAmount()}
+                  value={selectedClient ? calculateAmount().toString() : manualAmount.toString()}
+                  onChange={handleAmountChange}
+                  isAmount={true}
+                  onIncrement={handleIncrementAmount}
+                  onDecrement={handleDecrementAmount}
                   readOnly={!!selectedClient}
                 />
               </div>

@@ -114,7 +114,7 @@ const RenewalDateButton = ({ selectedDate, onSelect }: { selectedDate: string, o
 };
 
 const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) => {
-  const { handleNumberInput } = useNumberInput();
+  const { handleNumberInput, increment, decrement } = useNumberInput();
   const [formData, setFormData] = useState({
     companyName: "",
     district: "",
@@ -142,12 +142,33 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
         !handleNumberInput(e as React.ChangeEvent<HTMLInputElement>)) {
       return;
     }
+
+    if (name === "dueAmount" && e.target instanceof HTMLInputElement) {
+      const numValue = value === '' ? 0 : parseFloat(value);
+      setFormData(prev => ({
+        ...prev,
+        [name]: numValue
+      }));
+      return;
+    }
     
     setFormData(prev => ({
       ...prev,
-      [name]: name === "dueAmount" ? 
-        Math.floor(parseFloat(value || "0") / 100) * 100 : // Round to nearest 100
-        value
+      [name]: value
+    }));
+  };
+
+  const handleIncrementAmount = () => {
+    setFormData(prev => ({
+      ...prev,
+      dueAmount: prev.dueAmount + 100
+    }));
+  };
+
+  const handleDecrementAmount = () => {
+    setFormData(prev => ({
+      ...prev,
+      dueAmount: Math.max(0, prev.dueAmount - 100)
     }));
   };
 
@@ -398,11 +419,12 @@ const AddClientForm = ({ open, onOpenChange, onAddClient }: AddClientFormProps) 
               <Input 
                 id="dueAmount" 
                 name="dueAmount" 
-                type="number" 
-                step="100"
-                min="0"
-                value={formData.dueAmount} 
+                type="text"
+                isAmount={true}
+                value={formData.dueAmount.toString()}
                 onChange={handleChange}
+                onIncrement={handleIncrementAmount}
+                onDecrement={handleDecrementAmount}
                 required 
               />
             </div>
