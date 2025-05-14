@@ -34,9 +34,7 @@ const generateTransactionsFromClients = (clients) => {
       const products = [client.productsUsed]; // Make it an array to work with the forEach
       
       products.forEach((productName, productIndex) => {
-        const vatRate = 0.13; // 13% VAT
         const renewalAmount = client.dueAmount || 0;
-        const vat = renewalAmount * vatRate;
         const agentIndex = (index + productIndex) % agents.length;
         
         transactions.push({
@@ -47,7 +45,6 @@ const generateTransactionsFromClients = (clients) => {
           address: client.address || 'N/A',
           renewalDate: client.renewalDate || 'N/A',
           renewalAmount: renewalAmount,
-          vat: vat,
           agentName: agents[agentIndex]
         });
       });
@@ -126,9 +123,7 @@ const Transactions = () => {
       return;
     }
     
-    const vatRate = 0.13;
     const amount = calculateAmount();
-    const vat = amount * vatRate;
     
     const newTransaction = {
       id: newTransactionId,
@@ -138,7 +133,6 @@ const Transactions = () => {
       address: client.address || 'N/A',
       renewalDate: client.renewalDate || 'N/A', 
       renewalAmount: amount,
-      vat: vat,
       agentName: "Agent", // Could be selected or assigned
       date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
     };
@@ -266,11 +260,6 @@ const Transactions = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="vatBillNo">VAT Bill No</Label>
-                <Input id="vatBillNo" placeholder="Enter VAT bill number..." />
-              </div>
-              
-              <div className="space-y-2">
                 <Label htmlFor="paymentFor">Payment For</Label>
                 <Input 
                   id="paymentFor" 
@@ -333,8 +322,6 @@ const Transactions = () => {
                   <TableHead>Address</TableHead>
                   <TableHead>Renewal Date</TableHead>
                   <TableHead>Renewal Amount</TableHead>
-                  <TableHead>VAT</TableHead>
-                  <TableHead>Total</TableHead>
                   <TableHead>Agent Name</TableHead>
                 </TableRow>
               </TableHeader>
@@ -351,14 +338,12 @@ const Transactions = () => {
                       <TableCell>{transaction.address}</TableCell>
                       <TableCell>{transaction.renewalDate}</TableCell>
                       <TableCell>Rs. {transaction.renewalAmount.toFixed(2)}</TableCell>
-                      <TableCell>Rs. {transaction.vat.toFixed(2)}</TableCell>
-                      <TableCell>Rs. {(transaction.renewalAmount + transaction.vat).toFixed(2)}</TableCell>
                       <TableCell>{transaction.agentName}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
+                    <TableCell colSpan={7} className="h-24 text-center">
                       {clients.length === 0 ? (
                         <div className="flex flex-col items-center">
                           <p className="mb-2">No clients added yet.</p>
@@ -380,4 +365,3 @@ const Transactions = () => {
 };
 
 export default Transactions;
-
