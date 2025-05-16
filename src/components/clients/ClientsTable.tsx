@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, FileText, Download, Trash2, ChevronDown, PlusCircle } from "lucide-react";
+import { Search, FileText, Download, Trash2, ChevronDown, PlusCircle, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { 
   DropdownMenu, 
@@ -51,6 +51,26 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
     
     if (selectedClient && selectedClient.id === clientToDelete) {
       setSelectedClient(null);
+    }
+  };
+  
+  const handleActivateClient = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    // Find the client and update their status
+    const updatedClients = clients.map(client => 
+      client.id === id ? { ...client, clientStatus: 'Active' } : client
+    );
+    
+    // Update the clients list
+    setClients(updatedClients);
+    
+    // Show success toast
+    toast.success(`Client ${id} has been activated`);
+    
+    // Update selected client if it's the one being activated
+    if (selectedClient && selectedClient.id === id) {
+      setSelectedClient({ ...selectedClient, clientStatus: 'Active' });
     }
   };
   
@@ -129,7 +149,9 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
                     <span className={`px-2 py-1 rounded-full text-xs ${
                       client.clientStatus === 'Active' 
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                        : client.clientStatus === 'Pending'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                     }`}>
                       {client.clientStatus}
                     </span>
@@ -147,6 +169,19 @@ const ClientsTable = ({ clients, setClients }: ClientsTableProps) => {
                     >
                       <Download className="h-4 w-4" />
                     </Button>
+                    
+                    {client.clientStatus !== 'Active' && (
+                      <Button 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={(e) => handleActivateClient(client.id, e)}
+                        className="text-green-500 hover:text-green-600 hover:bg-green-50"
+                        title="Activate client"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    )}
+                    
                     <Button 
                       variant="ghost" 
                       size="icon"
