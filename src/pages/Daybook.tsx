@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,8 +7,9 @@ import { Calendar } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, isSameDay, parseISO } from "date-fns";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 // Create a type for our transaction data
 type Transaction = {
@@ -29,6 +31,7 @@ const getTransactions = (): Transaction[] => {
 const Daybook = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [transactions, setTransactions] = useState<Transaction[]>(getTransactions());
+  const [viewMode, setViewMode] = useState<'day' | 'week' | 'month'>('day');
   
   // Update transactions when localStorage changes
   useEffect(() => {
@@ -46,13 +49,44 @@ const Daybook = () => {
     };
   }, []);
   
-  const totalIncome = transactions
+  // Filter transactions based on selected date and view mode
+  const filteredTransactions = transactions.filter(transaction => {
+    if (!date || !transaction.date) return false;
+    
+    const transactionDate = parseISO(transaction.date);
+    
+    if (viewMode === 'day') {
+      return isSameDay(transactionDate, date);
+    } else if (viewMode === 'week') {
+      // Get start and end of week
+      const startOfWeek = new Date(date);
+      startOfWeek.setDate(date.getDate() - date.getDay());
+      const endOfWeek = new Date(startOfWeek);
+      endOfWeek.setDate(startOfWeek.getDate() + 6);
+      
+      return transactionDate >= startOfWeek && transactionDate <= endOfWeek;
+    } else if (viewMode === 'month') {
+      return (
+        transactionDate.getMonth() === date.getMonth() &&
+        transactionDate.getFullYear() === date.getFullYear()
+      );
+    }
+    
+    return false;
+  });
+  
+  const totalIncome = filteredTransactions
     .filter(item => item.type === "income")
     .reduce((sum, item) => sum + item.amount, 0);
     
-  const totalExpense = transactions
+  const totalExpense = filteredTransactions
     .filter(item => item.type === "expense")
     .reduce((sum, item) => sum + item.amount, 0);
+
+  const handleViewModeChange = (mode: 'day' | 'week' | 'month') => {
+    setViewMode(mode);
+    toast.success(`Viewing ${mode} transactions`);
+  };
 
   return (
     <MainLayout>
@@ -88,9 +122,27 @@ const Daybook = () => {
           </Popover>
           
           <div className="flex gap-4 w-full sm:w-auto">
-            <Button variant="outline" size="sm">Today</Button>
-            <Button variant="outline" size="sm">This Week</Button>
-            <Button variant="outline" size="sm">This Month</Button>
+            <Button 
+              variant={viewMode === 'day' ? "default" : "outline"} 
+              size="sm"
+              onClick={() => handleViewModeChange('day')}
+            >
+              Today
+            </Button>
+            <Button 
+              variant={viewMode === 'week' ? "default" : "outline"} 
+              size="sm"
+              onClick={() => handleViewModeChange('week')}
+            >
+              This Week
+            </Button>
+            <Button 
+              variant={viewMode === 'month' ? "default" : "outline"} 
+              size="sm"
+              onClick={() => handleViewModeChange('month')}
+            >
+              This Month
+            </Button>
           </div>
         </div>
         
@@ -125,7 +177,7 @@ const Daybook = () => {
         
         <Card>
           <CardHeader>
-            <CardTitle>Transaction History</CardTitle>
+            <CardTitle>Transaction History {viewMode === 'day' ? 'for Today' : viewMode === 'week' ? 'for This Week' : 'for This Month'}</CardTitle>
           </CardHeader>
           <CardContent>
             <Table>
@@ -140,14 +192,14 @@ const Daybook = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.length === 0 ? (
+                {filteredTransactions.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-muted-foreground">
-                      No transactions found
+                      No transactions found for the selected {viewMode}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  transactions.map((entry) => (
+                  filteredTransactions.map((entry) => (
                     <TableRow 
                       key={entry.id} 
                       className="hover:bg-muted/50 transition-colors"

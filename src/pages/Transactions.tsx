@@ -1,4 +1,3 @@
-
 import { useState, useMemo, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -55,6 +54,12 @@ const generateTransactionsFromClients = (clients) => {
   return transactions;
 };
 
+// Function to get transactions from localStorage
+const getTransactions = () => {
+  const storedTransactions = localStorage.getItem('transactions');
+  return storedTransactions ? JSON.parse(storedTransactions) : [];
+};
+
 const Transactions = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [searchTerm, setSearchTerm] = useState("");
@@ -62,6 +67,7 @@ const Transactions = () => {
   const [selectedProduct, setSelectedProduct] = useState("");
   const [clients, setClients] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   
   // Store the record number in state to prevent it from changing on re-renders
   const [newRecordNo, setNewRecordNo] = useState<string>("");
@@ -76,13 +82,37 @@ const Transactions = () => {
     }
   }, []);
 
+  // Load transactions from localStorage
+  useEffect(() => {
+    setTransactions(getTransactions());
+  }, []);
+
   // Update transactions when clients change
   useEffect(() => {
     if (clients.length > 0) {
       const generatedTransactions = generateTransactionsFromClients(clients);
-      setTransactions(generatedTransactions);
+      setTransactions(prevTransactions => {
+        // Combine with localStorage transactions and deduplicate by id
+        const allTransactions = [...prevTransactions, ...generatedTransactions];
+        const uniqueTransactions = allTransactions.filter((transaction, index, self) =>
+          index === self.findIndex(t => t.id === transaction.id)
+        );
+        return uniqueTransactions;
+      });
     }
   }, [clients]);
+  
+  // Listen for localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      setTransactions(getTransactions());
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
   
   // Initialize transaction ID and record number once on component mount
   useEffect(() => {
@@ -140,6 +170,33 @@ const Transactions = () => {
     setManualAmount(prev => Math.max(0, prev - 100));
   };
   
+  // Save transaction to localStorage for Daybook
+  const saveToDaybook = (transaction) => {
+    const daybookTransactions = localStorage.getItem('transactions') 
+      ? JSON.parse(localStorage.getItem('transactions') as string) 
+      : [];
+    
+    // Convert transaction to Daybook format
+    const daybookTransaction = {
+      id: transaction.id,
+      date: transaction.date,
+      companyName: transaction.clientName,
+      softwareName: transaction.productName,
+      paymentMode: transaction.paymentMethod,
+      amount: transaction.renewalAmount,
+      type: 'income' // Default to income for renewals
+    };
+    
+    // Add to existing transactions
+    daybookTransactions.push(daybookTransaction);
+    
+    // Save back to localStorage
+    localStorage.setItem('transactions', JSON.stringify(daybookTransactions));
+    
+    // Trigger storage event for other components
+    window.dispatchEvent(new Event('storage'));
+  };
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -150,6 +207,11 @@ const Transactions = () => {
     
     if (!selectedProduct) {
       toast.error("Please select a product");
+      return;
+    }
+    
+    if (!selectedPaymentMethod) {
+      toast.error("Please select a payment method");
       return;
     }
     
@@ -170,16 +232,23 @@ const Transactions = () => {
       address: client.address || 'N/A',
       renewalDate: client.renewalDate || 'N/A', 
       renewalAmount: amount,
+      paymentMethod: selectedPaymentMethod,
       agentName: "Agent", // Could be selected or assigned
       date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
     };
     
-    setTransactions([...transactions, newTransaction]);
+    // Save to local transactions state
+    setTransactions(prev => [...prev, newTransaction]);
+    
+    // Save to localStorage for Daybook
+    saveToDaybook(newTransaction);
+    
     toast.success("Transaction created successfully");
     
     // Reset form
     setSelectedClientId("");
     setSelectedProduct("");
+    setSelectedPaymentMethod("");
     
     // Generate new transaction ID and record number for the next transaction
     generateNewTransactionId();
@@ -319,19 +388,26 @@ const Transactions = () => {
               
               <div className="space-y-2">
                 <Label htmlFor="paymentMethod">Payment Method</Label>
-                <select id="paymentMethod" className="w-full p-2 border rounded-md bg-background">
-                  <option value="">Select payment method...</option>
-                  <option value="cash">Cash</option>
-                  <option value="bank">Bank Transfer</option>
-                  <option value="cheque">Cheque</option>
-                  <option value="online">Online Payment</option>
-                </select>
+                <Select
+                  value={selectedPaymentMethod}
+                  onValueChange={setSelectedPaymentMethod}
+                >
+                  <SelectTrigger id="paymentMethod">
+                    <SelectValue placeholder="Select payment method..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="cash">Cash</SelectItem>
+                    <SelectItem value="bank">Bank Transfer</SelectItem>
+                    <SelectItem value="cheque">Cheque</SelectItem>
+                    <SelectItem value="online">Online Payment</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
               <div className="md:col-span-3 flex justify-end">
                 <Button 
                   type="submit"
-                  disabled={!selectedClientId || !selectedProduct}
+                  disabled={!selectedClientId || !selectedProduct || !selectedPaymentMethod}
                 >
                   Create New Transaction
                 </Button>
@@ -367,6 +443,7 @@ const Transactions = () => {
                   <TableHead>Address</TableHead>
                   <TableHead>Renewal Date</TableHead>
                   <TableHead>Renewal Amount</TableHead>
+                  <TableHead>Payment Method</TableHead>
                   <TableHead>Agent Name</TableHead>
                 </TableRow>
               </TableHeader>
@@ -383,12 +460,13 @@ const Transactions = () => {
                       <TableCell>{transaction.address}</TableCell>
                       <TableCell>{transaction.renewalDate}</TableCell>
                       <TableCell>Rs. {transaction.renewalAmount.toFixed(2)}</TableCell>
+                      <TableCell>{transaction.paymentMethod}</TableCell>
                       <TableCell>{transaction.agentName}</TableCell>
                     </TableRow>
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">
+                    <TableCell colSpan={8} className="h-24 text-center">
                       {clients.length === 0 ? (
                         <div className="flex flex-col items-center">
                           <p className="mb-2">No clients added yet.</p>
