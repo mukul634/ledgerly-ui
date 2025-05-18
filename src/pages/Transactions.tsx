@@ -1,3 +1,4 @@
+
 import { useState, useMemo, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,6 +69,7 @@ const Transactions = () => {
   const [clients, setClients] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const [agentName, setAgentName] = useState(""); // New state for agent name
   
   // Store the record number in state to prevent it from changing on re-renders
   const [newRecordNo, setNewRecordNo] = useState<string>("");
@@ -233,7 +235,7 @@ const Transactions = () => {
       renewalDate: client.renewalDate || 'N/A', 
       renewalAmount: amount,
       paymentMethod: selectedPaymentMethod,
-      agentName: "Agent", // Could be selected or assigned
+      agentName: agentName || "Not specified", // Use entered agent name or default
       date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
     };
     
@@ -249,6 +251,7 @@ const Transactions = () => {
     setSelectedClientId("");
     setSelectedProduct("");
     setSelectedPaymentMethod("");
+    setAgentName(""); // Reset agent name field
     
     // Generate new transaction ID and record number for the next transaction
     generateNewTransactionId();
@@ -402,6 +405,17 @@ const Transactions = () => {
                     <SelectItem value="online">Online Payment</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              
+              {/* New Agent Name Field */}
+              <div className="space-y-2">
+                <Label htmlFor="agentName">Agent Name</Label>
+                <Input 
+                  id="agentName" 
+                  placeholder="Enter agent name..." 
+                  value={agentName}
+                  onChange={(e) => setAgentName(e.target.value)}
+                />
               </div>
               
               <div className="md:col-span-3 flex justify-end">
