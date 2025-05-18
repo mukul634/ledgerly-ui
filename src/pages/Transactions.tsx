@@ -18,6 +18,10 @@ import { Badge } from "@/components/ui/badge";
 // Import our new services
 import { getClients } from "@/services/clientService";
 import { getTransactions, addTransaction, updateTransactionForClient } from "@/services/transactionService";
+import { Database } from "@/lib/database.types";
+
+// Define the transaction type explicitly to match the database type
+type TransactionType = Database['public']['Tables']['transactions']['Row']['transactionType'];
 
 const Transactions = () => {
   const [clients, setClients] = useState([]);
@@ -28,7 +32,7 @@ const Transactions = () => {
   const [newRecordNo, setNewRecordNo] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedProduct, setSelectedProduct] = useState("");
-  const [selectedTransactionType, setSelectedTransactionType] = useState("");
+  const [selectedTransactionType, setSelectedTransactionType] = useState<TransactionType>("Payment");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState<Date | undefined>(new Date());
@@ -98,14 +102,17 @@ const Transactions = () => {
         return;
       }
       
-      // Prepare transaction data
+      // Ensure transactionType is of the correct type
+      const transactionType: TransactionType = selectedTransactionType as TransactionType;
+      
+      // Prepare transaction data with proper types
       const transactionData = {
         id: transactionId,
         recordNo: newRecordNo,
         clientId: selectedClientId,
-        transactionType: selectedTransactionType,
+        transactionType, // Using the properly typed variable
         amount: parseFloat(amount),
-        details: description || `${selectedTransactionType} for ${client.companyName}`,
+        details: description || `${transactionType} for ${client.companyName}`,
         paymentMethod: selectedPaymentMethod,
         agentName: agentName || "Not specified",
         date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
@@ -118,9 +125,9 @@ const Transactions = () => {
         // Update client's due amount if needed
         let newDueAmount = client.dueAmount || 0;
         
-        if (selectedTransactionType === "Payment") {
+        if (transactionType === "Payment") {
           newDueAmount -= parseFloat(amount);
-        } else if (selectedTransactionType === "Renewal") {
+        } else if (transactionType === "Renewal") {
           // For renewals, you might want to handle differently
           newDueAmount = parseFloat(amount); // Set as the new due amount
         }
@@ -146,7 +153,7 @@ const Transactions = () => {
         generateNewTransactionId();
         generateNewRecordNumber();
         
-        toast.success(`${selectedTransactionType} recorded successfully`);
+        toast.success(`${transactionType} recorded successfully`);
       }
     } catch (error) {
       console.error("Error adding transaction:", error);
@@ -195,7 +202,10 @@ const Transactions = () => {
                 </div>
                 <div>
                   <Label htmlFor="transactionType">Transaction Type</Label>
-                  <Select onValueChange={(value) => setSelectedTransactionType(value)}>
+                  <Select 
+                    onValueChange={(value) => setSelectedTransactionType(value as TransactionType)}
+                    defaultValue="Payment"
+                  >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select transaction type" />
                     </SelectTrigger>
