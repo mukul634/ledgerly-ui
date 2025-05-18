@@ -1,10 +1,9 @@
-
-import { supabase } from '@/lib/supabase';
+import { supabase, useLocalStorage } from '@/lib/supabase';
 
 // Simplified authentication service that works both with Supabase and without it
 export const loginUser = async (email: string, password: string) => {
   // Check if Supabase is configured
-  if (!import.meta.env.VITE_SUPABASE_URL) {
+  if (useLocalStorage) {
     // Use mock authentication for development without Supabase
     if (email === 'admin@example.com' && password === 'password') {
       const userData = {
@@ -38,7 +37,7 @@ export const loginUser = async (email: string, password: string) => {
 
 export const logoutUser = async () => {
   // Check if Supabase is configured
-  if (!import.meta.env.VITE_SUPABASE_URL) {
+  if (useLocalStorage) {
     localStorage.removeItem('auth_user');
     return { error: null };
   }
@@ -50,7 +49,7 @@ export const logoutUser = async () => {
 
 export const getCurrentUser = async () => {
   // Check if Supabase is configured
-  if (!import.meta.env.VITE_SUPABASE_URL) {
+  if (useLocalStorage) {
     const userData = localStorage.getItem('auth_user');
     return userData ? JSON.parse(userData) : null;
   }

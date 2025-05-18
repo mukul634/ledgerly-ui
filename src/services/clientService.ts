@@ -1,14 +1,10 @@
-
-import { supabase } from '@/lib/supabase';
+import { supabase, useLocalStorage } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Database } from '@/lib/database.types';
 
 export type Client = Database['public']['Tables']['clients']['Row'];
 export type ClientInsert = Database['public']['Tables']['clients']['Insert'];
 export type ClientUpdate = Database['public']['Tables']['clients']['Update'];
-
-// Fallback to localStorage if Supabase is not configured
-const useLocalStorage = !import.meta.env.VITE_SUPABASE_URL;
 
 export const getClients = async (): Promise<Client[]> => {
   if (useLocalStorage) {

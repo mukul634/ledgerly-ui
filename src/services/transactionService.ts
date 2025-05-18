@@ -1,14 +1,10 @@
-
-import { supabase } from '@/lib/supabase';
+import { supabase, useLocalStorage } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { Database } from '@/lib/database.types';
 
 export type Transaction = Database['public']['Tables']['transactions']['Row'];
 export type TransactionInsert = Database['public']['Tables']['transactions']['Insert'];
 export type TransactionUpdate = Database['public']['Tables']['transactions']['Update'];
-
-// Fallback to localStorage if Supabase is not configured
-const useLocalStorage = !import.meta.env.VITE_SUPABASE_URL;
 
 export const getTransactions = async (): Promise<Transaction[]> => {
   if (useLocalStorage) {

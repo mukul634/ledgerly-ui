@@ -20,7 +20,7 @@ const useTransactions = () => {
       setTransactions(transactionsData);
     } catch (err) {
       console.error("Error loading data:", err);
-      toast.error("Failed to load data");
+      toast.error("Failed to load data. Check Supabase configuration.");
     } finally {
       setIsLoading(false);
     }
