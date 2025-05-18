@@ -1,501 +1,310 @@
-
 import { useState, useMemo, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FormEvent } from 'react';
 import { Label } from "@/components/ui/label";
-import { Search, FileDown, Calendar } from "lucide-react";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Calendar as CalendarComponent } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useNumberInput } from "@/hooks/useNumberInput";
+import { CalendarIcon, CheckCircle, CircleDollarSign, FileText, PlusCircle } from "lucide-react";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
-// Generate transactions based on client data
-const generateTransactionsFromClients = (clients) => {
-  if (!clients || clients.length === 0) return [];
-  
-  const agents = ["Sarah Johnson", "David Clark", "Linda Martinez", "Mark Wilson", "Jessica Adams"];
-  
-  const transactions = [];
-  
-  clients.forEach((client, index) => {
-    // Only create transactions for clients with products
-    if (client.productsUsed) {
-      const products = [client.productsUsed]; // Make it an array to work with the forEach
-      
-      products.forEach((productName, productIndex) => {
-        const renewalAmount = client.dueAmount || 0;
-        const agentIndex = (index + productIndex) % agents.length;
-        
-        transactions.push({
-          id: `TR${String(transactions.length + 1).padStart(3, '0')}`,
-          productName: productName,
-          clientId: client.id,
-          clientName: client.companyName,
-          address: client.address || 'N/A',
-          renewalDate: client.renewalDate || 'N/A',
-          renewalAmount: renewalAmount,
-          agentName: agents[agentIndex]
-        });
-      });
-    }
-  });
-  
-  return transactions;
-};
-
-// Function to get transactions from localStorage
-const getTransactions = () => {
-  const storedTransactions = localStorage.getItem('transactions');
-  return storedTransactions ? JSON.parse(storedTransactions) : [];
-};
+// Import our new services
+import { getClients } from "@/services/clientService";
+import { getTransactions, addTransaction, updateTransactionForClient } from "@/services/transactionService";
 
 const Transactions = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedClientId, setSelectedClientId] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState("");
   const [clients, setClients] = useState([]);
   const [transactions, setTransactions] = useState([]);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
   const [agentName, setAgentName] = useState(""); // New state for agent name
-  
-  // Store the record number in state to prevent it from changing on re-renders
-  const [newRecordNo, setNewRecordNo] = useState<string>("");
-  // Store the transaction ID in state as well for consistency
-  const [newTransactionId, setNewTransactionId] = useState<string>("");
-  
-  // Load clients from localStorage on component mount
-  useEffect(() => {
-    const storedClients = localStorage.getItem('clients');
-    if (storedClients) {
-      setClients(JSON.parse(storedClients));
-    }
-  }, []);
+  const [transactionId, setTransactionId] = useState("");
+  const [newRecordNo, setNewRecordNo] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedProduct, setSelectedProduct] = useState("");
+  const [selectedTransactionType, setSelectedTransactionType] = useState("");
+  const [amount, setAmount] = useState("");
+  const [description, setDescription] = useState("");
+  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [isAddingTransaction, setIsAddingTransaction] = useState(false);
 
-  // Load transactions from localStorage
+  // Load clients and transactions from the service
   useEffect(() => {
-    setTransactions(getTransactions());
-  }, []);
-
-  // Update transactions when clients change
-  useEffect(() => {
-    if (clients.length > 0) {
-      const generatedTransactions = generateTransactionsFromClients(clients);
-      setTransactions(prevTransactions => {
-        // Combine with localStorage transactions and deduplicate by id
-        const allTransactions = [...prevTransactions, ...generatedTransactions];
-        const uniqueTransactions = allTransactions.filter((transaction, index, self) =>
-          index === self.findIndex(t => t.id === transaction.id)
-        );
-        return uniqueTransactions;
-      });
-    }
-  }, [clients]);
-  
-  // Listen for localStorage changes
-  useEffect(() => {
-    const handleStorageChange = () => {
-      setTransactions(getTransactions());
+    const loadData = async () => {
+      try {
+        const clientsData = await getClients();
+        setClients(clientsData);
+        
+        const transactionsData = await getTransactions();
+        setTransactions(transactionsData);
+        
+        generateNewTransactionId();
+        generateNewRecordNumber();
+      } catch (err) {
+        console.error("Error loading data:", err);
+        toast.error("Failed to load data");
+      }
     };
+    
+    loadData();
+  }, []);
 
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-  
-  // Initialize transaction ID and record number once on component mount
-  useEffect(() => {
-    generateNewTransactionId();
-    generateNewRecordNo();
-  }, []);
-  
-  // Generate a new transaction ID
-  const generateTransactionId = () => {
-    return `TR${String(transactions.length + 1).padStart(3, '0')}`;
-  };
-  
-  // Update the transaction ID
   const generateNewTransactionId = () => {
-    setNewTransactionId(generateTransactionId());
-  };
-  
-  // Generate a new record number
-  const generateNewRecordNo = () => {
-    setNewRecordNo(`REC${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`);
+    const newId = 'T-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+    setTransactionId(newId);
   };
 
-  const { handleNumberInput } = useNumberInput();
-
-  const filteredTransactions = transactions.filter((transaction) => 
-    (transaction.clientName && transaction.clientName.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (transaction.clientId && transaction.clientId.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-  
-  const selectedClient = clients.find(client => client.id === selectedClientId);
-  
-  // Get available products for the selected client
-  const availableProducts = selectedClient ? [selectedClient.productsUsed].filter(Boolean) : [];
-  
-  // Calculate amount based on selected product
-  const calculateAmount = () => {
-    if (!selectedClient) return 0;
-    return selectedClient.dueAmount || 0;
-  };
-  
-  const [manualAmount, setManualAmount] = useState<number>(0);
-
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (handleNumberInput(e)) {
-      const value = e.target.value === '' ? 0 : parseFloat(e.target.value);
-      setManualAmount(value);
-    }
+  const generateNewRecordNumber = () => {
+    const newRecord = 'R-' + Math.floor(1000 + Math.random() * 9000);
+    setNewRecordNo(newRecord);
   };
 
-  const handleIncrementAmount = () => {
-    setManualAmount(prev => prev + 100);
-  };
+  const transactionTypeOptions = useMemo(() => [
+    { value: "Payment", label: "Payment" },
+    { value: "Renewal", label: "Renewal" },
+    { value: "New Registration", label: "New Registration" },
+  ], []);
 
-  const handleDecrementAmount = () => {
-    setManualAmount(prev => Math.max(0, prev - 100));
-  };
-  
-  // Save transaction to localStorage for Daybook
-  const saveToDaybook = (transaction) => {
-    const daybookTransactions = localStorage.getItem('transactions') 
-      ? JSON.parse(localStorage.getItem('transactions') as string) 
-      : [];
-    
-    // Convert transaction to Daybook format
-    const daybookTransaction = {
-      id: transaction.id,
-      date: transaction.date,
-      companyName: transaction.clientName,
-      softwareName: transaction.productName,
-      paymentMode: transaction.paymentMethod,
-      amount: transaction.renewalAmount,
-      type: 'income' // Default to income for renewals
-    };
-    
-    // Add to existing transactions
-    daybookTransactions.push(daybookTransaction);
-    
-    // Save back to localStorage
-    localStorage.setItem('transactions', JSON.stringify(daybookTransactions));
-    
-    // Trigger storage event for other components
-    window.dispatchEvent(new Event('storage'));
-  };
-  
-  const handleSubmit = (e: React.FormEvent) => {
+  const paymentMethodOptions = useMemo(() => [
+    { value: "cash", label: "Cash" },
+    { value: "check", label: "Check" },
+    { value: "online", label: "Online" },
+  ], []);
+
+  const sortedTransactions = useMemo(() => {
+    return [...transactions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [transactions]);
+
+  // Update this function to use our service
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    if (!selectedClientId) {
-      toast.error("Please select a client");
+    if (!selectedClientId || !amount || !selectedTransactionType || !selectedPaymentMethod) {
+      toast.error("Please fill in all required fields");
       return;
     }
     
-    if (!selectedProduct) {
-      toast.error("Please select a product");
-      return;
+    try {
+      // Find the client
+      const client = clients.find(c => c.id === selectedClientId);
+      if (!client) {
+        toast.error("Client not found");
+        return;
+      }
+      
+      // Prepare transaction data
+      const transactionData = {
+        id: transactionId,
+        recordNo: newRecordNo,
+        clientId: selectedClientId,
+        transactionType: selectedTransactionType,
+        amount: parseFloat(amount),
+        details: description || `${selectedTransactionType} for ${client.companyName}`,
+        paymentMethod: selectedPaymentMethod,
+        agentName: agentName || "Not specified",
+        date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
+      };
+      
+      // Add the transaction
+      const newTransaction = await addTransaction(transactionData);
+      
+      if (newTransaction) {
+        // Update client's due amount if needed
+        let newDueAmount = client.dueAmount || 0;
+        
+        if (selectedTransactionType === "Payment") {
+          newDueAmount -= parseFloat(amount);
+        } else if (selectedTransactionType === "Renewal") {
+          // For renewals, you might want to handle differently
+          newDueAmount = parseFloat(amount); // Set as the new due amount
+        }
+        
+        await updateTransactionForClient(client.id, { dueAmount: newDueAmount });
+        
+        // Update local state to reflect changes
+        setTransactions(prev => [newTransaction, ...prev]);
+        setClients(prev => 
+          prev.map(c => c.id === client.id ? { ...c, dueAmount: newDueAmount } : c)
+        );
+        
+        // Clear form fields
+        setAmount("");
+        setDescription("");
+        setDate(new Date());
+        setSelectedClientId("");
+        setSelectedProduct("");
+        setSelectedPaymentMethod("");
+        setAgentName(""); // Reset agent name field
+        
+        // Generate new transaction ID and record number for the next transaction
+        generateNewTransactionId();
+        generateNewRecordNumber();
+        
+        toast.success(`${selectedTransactionType} recorded successfully`);
+      }
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+      toast.error("Failed to add transaction");
     }
-    
-    if (!selectedPaymentMethod) {
-      toast.error("Please select a payment method");
-      return;
-    }
-    
-    const client = clients.find(c => c.id === selectedClientId);
-    
-    if (!client) {
-      toast.error("Invalid client selected");
-      return;
-    }
-    
-    const amount = calculateAmount();
-    
-    const newTransaction = {
-      id: newTransactionId,
-      productName: selectedProduct,
-      clientId: client.id,
-      clientName: client.companyName,
-      address: client.address || 'N/A',
-      renewalDate: client.renewalDate || 'N/A', 
-      renewalAmount: amount,
-      paymentMethod: selectedPaymentMethod,
-      agentName: agentName || "Not specified", // Use entered agent name or default
-      date: date ? format(date, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
-    };
-    
-    // Save to local transactions state
-    setTransactions(prev => [...prev, newTransaction]);
-    
-    // Save to localStorage for Daybook
-    saveToDaybook(newTransaction);
-    
-    toast.success("Transaction created successfully");
-    
-    // Reset form
-    setSelectedClientId("");
-    setSelectedProduct("");
-    setSelectedPaymentMethod("");
-    setAgentName(""); // Reset agent name field
-    
-    // Generate new transaction ID and record number for the next transaction
-    generateNewTransactionId();
-    generateNewRecordNo();
   };
 
   return (
     <MainLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Transactions</h1>
-          <p className="text-muted-foreground">Create and manage client transactions</p>
-        </div>
-        
+      <div className="container mx-auto py-10">
         <Card>
-          <CardHeader>
-            <CardTitle>Create New Transaction</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-2xl font-bold">Transactions</CardTitle>
+            <Button onClick={() => setIsAddingTransaction(!isAddingTransaction)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Transaction
+            </Button>
           </CardHeader>
           <CardContent>
-            <div className="mb-4 space-y-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {isAddingTransaction && (
+              <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <Label className="text-muted-foreground">Transaction ID</Label>
-                  <p className="font-medium">{newTransactionId}</p>
+                  <Label htmlFor="transactionId">Transaction ID</Label>
+                  <Input type="text" id="transactionId" value={transactionId} readOnly />
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Record No</Label>
-                  <p className="font-medium">{newRecordNo}</p>
+                  <Label htmlFor="recordNo">Record No</Label>
+                  <Input type="text" id="recordNo" value={newRecordNo} readOnly />
                 </div>
-              </div>
-            </div>
-            
-            <form className="grid grid-cols-1 md:grid-cols-3 gap-6" onSubmit={handleSubmit}>
-              <div className="space-y-2">
-                <Label htmlFor="clientSelect">Select Client</Label>
-                <select 
-                  id="clientSelect" 
-                  className="w-full p-2 border rounded-md bg-background"
-                  value={selectedClientId}
-                  onChange={(e) => {
-                    setSelectedClientId(e.target.value);
-                    setSelectedProduct(""); // Reset selected product when client changes
-                  }}
-                >
-                  <option value="">Select a client...</option>
-                  {clients.map(client => (
-                    <option key={client.id} value={client.id}>
-                      {client.id} - {client.companyName}
-                    </option>
-                  ))}
-                </select>
-                {clients.length === 0 && (
-                  <p className="text-sm text-orange-500 mt-1">
-                    No clients added yet. Please add clients from the Clients page first.
-                  </p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="productSelect">Select Product</Label>
-                <Select 
-                  value={selectedProduct} 
-                  onValueChange={setSelectedProduct}
-                  disabled={!selectedClientId || availableProducts.length === 0}
-                >
-                  <SelectTrigger id="productSelect">
-                    <SelectValue placeholder="Select product..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {availableProducts.length > 0 ? (
-                      availableProducts.map(product => (
-                        <SelectItem key={product} value={product}>
-                          {product}
-                        </SelectItem>
-                      ))
-                    ) : (
-                      <SelectItem value="none" disabled>No products available</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="transactionDate">Transaction Date</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      <Calendar className="mr-2 h-4 w-4" />
-                      {date ? format(date, "PPP") : <span>Pick a date</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={date}
-                      onSelect={setDate}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="amount">Amount</Label>
-                <Input 
-                  id="amount" 
-                  type="text" 
-                  placeholder="0.00" 
-                  value={selectedClient ? calculateAmount().toString() : manualAmount.toString()}
-                  onChange={handleAmountChange}
-                  isAmount={true}
-                  onIncrement={handleIncrementAmount}
-                  onDecrement={handleDecrementAmount}
-                  readOnly={!!selectedClient}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="paymentFor">Payment For</Label>
-                <Input 
-                  id="paymentFor" 
-                  placeholder="Purpose of payment..." 
-                  value={selectedClient && selectedProduct ? 
-                    `Renewal for ${selectedProduct}` : 
-                    ""
-                  }
-                  readOnly={!!(selectedClient && selectedProduct)}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="paymentMethod">Payment Method</Label>
-                <Select
-                  value={selectedPaymentMethod}
-                  onValueChange={setSelectedPaymentMethod}
-                >
-                  <SelectTrigger id="paymentMethod">
-                    <SelectValue placeholder="Select payment method..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="bank">Bank Transfer</SelectItem>
-                    <SelectItem value="cheque">Cheque</SelectItem>
-                    <SelectItem value="online">Online Payment</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              {/* New Agent Name Field */}
-              <div className="space-y-2">
-                <Label htmlFor="agentName">Agent Name</Label>
-                <Input 
-                  id="agentName" 
-                  placeholder="Enter agent name..." 
-                  value={agentName}
-                  onChange={(e) => setAgentName(e.target.value)}
-                />
-              </div>
-              
-              <div className="md:col-span-3 flex justify-end">
-                <Button 
-                  type="submit"
-                  disabled={!selectedClientId || !selectedProduct || !selectedPaymentMethod}
-                >
-                  Create New Transaction
+                <div>
+                  <Label htmlFor="clientId">Client</Label>
+                  <Select onValueChange={(value) => setSelectedClientId(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select client" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {clients.map((client) => (
+                        <SelectItem key={client.id} value={client.id}>{client.companyName}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="product">Product</Label>
+                  <Input type="text" id="product" value={selectedProduct} onChange={(e) => setSelectedProduct(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="transactionType">Transaction Type</Label>
+                  <Select onValueChange={(value) => setSelectedTransactionType(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select transaction type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {transactionTypeOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="amount">Amount</Label>
+                  <Input type="number" id="amount" value={amount} onChange={(e) => setAmount(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="paymentMethod">Payment Method</Label>
+                  <Select onValueChange={(value) => setSelectedPaymentMethod(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select payment method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {paymentMethodOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="agentName">Agent Name</Label>
+                  <Input
+                    type="text"
+                    id="agentName"
+                    value={agentName}
+                    onChange={(e) => setAgentName(e.target.value)}
+                    placeholder="Enter agent name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="description">Description</Label>
+                  <Input type="text" id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+                </div>
+                <div>
+                  <Label>Date</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full justify-start text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date ? format(date, "PPP") : <span>Pick a date</span>}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="center" side="bottom">
+                      <Calendar
+                        mode="single"
+                        selected={date}
+                        onSelect={setDate}
+                        disabled={(date) =>
+                          date > new Date()
+                        }
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <Button type="submit" className="mt-6" disabled={isAddingTransaction}>
+                  {isAddingTransaction ? "Adding..." : "Add Transaction"}
                 </Button>
-              </div>
-            </form>
+              </form>
+            )}
+
+            <div className="relative overflow-x-auto mt-6">
+              <Table>
+                <TableCaption>A list of your recent transactions.</TableCaption>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Record No</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Amount</TableHead>
+                    <TableHead>Payment Method</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedTransactions.map((transaction) => {
+                    const client = clients.find(c => c.id === transaction.clientId);
+                    return (
+                      <TableRow key={transaction.id}>
+                        <TableCell>{transaction.recordNo}</TableCell>
+                        <TableCell>{client?.companyName || "N/A"}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">{transaction.transactionType}</Badge>
+                        </TableCell>
+                        <TableCell>₹{transaction.amount.toFixed(2)}</TableCell>
+                        <TableCell>{transaction.paymentMethod}</TableCell>
+                        <TableCell>{format(new Date(transaction.date), "PPP")}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
-        
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between gap-4">
-            <div className="relative w-full sm:w-96">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search transactions..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            <Button variant="outline">
-              <FileDown className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-          </div>
-
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product Name</TableHead>
-                  <TableHead>Client ID</TableHead>
-                  <TableHead>Client Name</TableHead>
-                  <TableHead>Address</TableHead>
-                  <TableHead>Renewal Date</TableHead>
-                  <TableHead>Renewal Amount</TableHead>
-                  <TableHead>Payment Method</TableHead>
-                  <TableHead>Agent Name</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTransactions.length > 0 ? (
-                  filteredTransactions.map((transaction) => (
-                    <TableRow 
-                      key={transaction.id} 
-                      className="hover:bg-muted/50 transition-colors"
-                    >
-                      <TableCell>{transaction.productName}</TableCell>
-                      <TableCell>{transaction.clientId}</TableCell>
-                      <TableCell>{transaction.clientName}</TableCell>
-                      <TableCell>{transaction.address}</TableCell>
-                      <TableCell>{transaction.renewalDate}</TableCell>
-                      <TableCell>Rs. {transaction.renewalAmount.toFixed(2)}</TableCell>
-                      <TableCell>{transaction.paymentMethod}</TableCell>
-                      <TableCell>{transaction.agentName}</TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
-                      {clients.length === 0 ? (
-                        <div className="flex flex-col items-center">
-                          <p className="mb-2">No clients added yet.</p>
-                          <p className="text-sm text-muted-foreground">Add clients first to create transactions.</p>
-                        </div>
-                      ) : (
-                        <div>No transactions found.</div>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </div>
       </div>
     </MainLayout>
   );

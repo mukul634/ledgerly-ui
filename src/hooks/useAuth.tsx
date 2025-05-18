@@ -1,65 +1,84 @@
-import { createContext, useContext, useState, useEffect } from "react";
 
-interface User {
-  username: string;
+import { createContext, useContext, useState, useEffect } from 'react';
+import { loginUser, logoutUser, getCurrentUser } from '../services/authService';
+import { useNavigate } from 'react-router-dom';
+
+type AuthUser = {
+  id: string;
+  email: string | null;
+  name: string;
   role: string;
-}
+} | null;
 
 interface AuthContextType {
-  user: User | null;
-  login: (username: string, role: string) => void;
-  logout: () => void;
-  isAuthenticated: boolean;
+  user: AuthUser;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  logout: () => Promise<void>;
+  loading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  login: () => {},
-  logout: () => {},
-  isAuthenticated: false,
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  // Set default user to be automatically logged in
-  const defaultUser = { username: "admin", role: "admin" };
-  const [user, setUser] = useState<User | null>(defaultUser);
+  const [user, setUser] = useState<AuthUser>(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // No need to check localStorage anymore since we're always authenticated
   useEffect(() => {
-    // Check if user is logged in on page load
-    const storedUser = localStorage.getItem("finledger_user");
-    if (storedUser) {
+    const checkUser = async () => {
       try {
-        setUser(JSON.parse(storedUser));
+        const currentUser = await getCurrentUser();
+        setUser(currentUser);
       } catch (error) {
-        console.error("Error parsing user data", error);
-        localStorage.removeItem("finledger_user");
+        console.error('Error checking auth state:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-    }
+    };
+
+    checkUser();
   }, []);
-  
-  const login = (username: string, role: string) => {
-    const userData = { username, role };
-    localStorage.setItem("finledger_user", JSON.stringify(userData));
-    setUser(userData);
+
+  const login = async (email: string, password: string) => {
+    try {
+      const { user: authUser, error } = await loginUser(email, password);
+      
+      if (error || !authUser) {
+        return { success: false, error: error || 'Login failed' };
+      }
+
+      setUser(authUser);
+      return { success: true };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, error: 'An unexpected error occurred' };
+    }
   };
 
-  const logout = () => {
-    // We're keeping the logout functionality in case it's needed in the future
-    localStorage.removeItem("finledger_user");
-    setUser(defaultUser); // Reset to default user instead of null
+  const logout = async () => {
+    try {
+      await logoutUser();
+      setUser(null);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
-  const value = {
-    user,
-    login,
-    logout,
-    isAuthenticated: true, // Always authenticated
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, login, logout, loading }}>
+      {children}
+    </AuthContext.Provider>
+  );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 export default useAuth;
